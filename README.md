@@ -4,31 +4,33 @@
 Table of Contents
 =================
    * [Rebuttal Electron App](#rebuttal-electron-app)
+      * [Installation](#installation)
       * [Customisation](#customisation)
          * [Themes](#themes)
-      * [Installation](#installation)
       * [Using](#using) 
          * [Sending images in text chat](#sending-images-in-text-chat)
             * [Mouse &amp; Keyboard](#mouse--keyboard)
             * [Touch screens](#touch-screens)
+   * [Rebuttal Webchat](#rebuttal-webchat)
 
 Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
 # Rebuttal Electron App
+Rebuttal Client is a multimedia webchat system featuring text channels and Voice, Webcam and Livestream rooms. It is written in JS/HTML and is used to connect to [Rebuttal Webchat servers](https://github.com/trigg/Rebuttal/) via Electron. 
+
+
+## Installation
 
 Install this repository and run `yarn client -- --url=https://127.0.0.1:9000/ipc` in the root. Naturally change the url to point to a running IPC URI on a server
 
 
 ## Customisation
 
+
 ### Themes
+[See Wiki](https://github.com/trigg/Rebuttal/wiki/Theme-Creation)
 
-Rebuttal comes with 3 themes by default and allows extras. To create a theme called `example` you need to create `public/css/example.css` and `public/img/example/...`
 
-SCSS sections are used to our own themes but not required of any new themes
-
-## Installation
-insert instructions here
 
 ## Using
 
@@ -43,3 +45,6 @@ When viewing a text room Drag-and-Drop the image over the app. A preview should 
 #### Touch screens
 
 Honestly I have no idea.
+
+# Rebuttal Webchat
+If you're looking to host a Rebuttal server, please see https://github.com/trigg/Rebuttal/
