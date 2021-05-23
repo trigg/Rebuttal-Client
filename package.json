@@ -1,0 +1,61 @@
+{
+  "name": "rebuttal-client",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "run": "electron --enable-transparent-visuals .",
+    "run-overlay": "electron  --ignore-certificate-errors --enable-transparent-visuals --disable-gpu .",
+    "test": "node test/index.js",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder -mwl",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "author": {
+    "name": "trigg",
+    "email": "triggerhapp@gmail.com"
+  },
+  "license": "GPL-3.0-or-later",
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^12.0.7",
+    "electron-builder": "22.10.4",
+    "node-gyp": "^8.0.0"
+  },
+  "build": {
+    "appId": "com.electron.rebuttal.app",
+    "productName": "Rebuttal Client",
+    "copyright": "Copyright ©2021 Nathan Howard",
+    "publish": null,
+    "dmg": {
+      "contents": [
+        {
+          "x": 110,
+          "y": 150
+        },
+        {
+          "x": 240,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        "msi"
+      ]
+    },
+    "linux": {
+      "category": "Chat",
+      "target": [
+        "AppImage",
+        "snap",
+        "deb",
+        "rpm",
+        "pacman",
+        "tar.gz"
+      ]
+    }
+  }
+}
