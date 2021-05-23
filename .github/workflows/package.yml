@@ -10,9 +10,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 16
-      - run: sudo dpkg --add-architecture i386
-      - run: sudo apt update
-      - run: sudo apt install libarchive-tools rpm wine wine32 mono-complete
+      - run: sudo apt install libarchive-tools rpm wine
       - run: yarn
       - run: yarn dist
       - name: Archive Binaries
