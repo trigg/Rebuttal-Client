@@ -9,9 +9,9 @@
     "test": "node test/index.js",
     "pack": "electron-builder --dir",
     "dist": "electron-builder -mwl",
-    "dist-win": "electron-builder -w",
-    "dist-linux": "electron-builder -l",
-    "dist-mac": "electron-builder -m",
+    "dist-win": "electron-builder -w --x64",
+    "dist-linux": "electron-builder -l --x64",
+    "dist-mac": "electron-builder -m --x64",
     "postinstall": "electron-builder install-app-deps"
   },
   "author": {
