@@ -3,16 +3,21 @@ name: Build Binaries
 on: [push]
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Setup node
+        uses: actions/setup-node@v1
         with:
           node-version: 16
-      - run: sudo apt install libarchive-tools rpm
-      - run: yarn
-      - run: yarn dist-linux
+      - name: Prepare OS
+        run: sudo apt install libarchive-tools rpm
+      - name: Prepare Yarn
+        run: yarn
+      - name: Package for Linux
+        run: yarn dist-linux
       - name: Archive Binaries
         uses: actions/upload-artifact@v2
         with:
@@ -24,4 +29,43 @@ jobs:
             dist/*.tar.gz
             dist/*.rpm
             dist/*.AppImage
+          retention-days: 5
+  build-mac:
+    runs-on: macOS-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+      - name: Prepare Yarn
+        run: yarn
+      - name: Package for Mac
+        run: yarn dist-mac
+      - name: Archive Binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: |
+            dist/*.dmg
+          retention-days: 5
+  build-win:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+      - run: sudo apt install libarchive-tools wine
+      - run: yarn
+      - run: yarn dist-win
+      - name: Archive Binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: |
+            dist/*.msi
           retention-days: 5
