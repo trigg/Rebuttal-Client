@@ -87,25 +87,32 @@ function prepareOverlay() {
             if (overlay) {
                 overlay.webContents.send('userlist', a);
             }
-        })
+        });
 
         ipcMain.on('talkstart', function (e, a) {
             if (overlay) {
                 overlay.webContents.send('talkstart', a);
             }
-        })
+        });
 
         ipcMain.on('talkstop', function (e, a) {
             if (overlay) {
                 overlay.webContents.send('talkstop', a);
             }
-        })
+        });
+
+
     } else {
         console.log("Overlay is not yet supported on this platform");
     }
+    ipcMain.on('connectToServer', function (e, a) {
+        var lastwin = win;
+        createWindow(a.host, a.user);
+        lastwin.close();
+    });
 }
 
-function createWindow() {
+function createWindow(url, username) {
     win = new BrowserWindow({
         width: 600,
         height: 400,
@@ -128,14 +135,14 @@ app.whenReady().then(() => {
     if (!url) {
         createServerBrowser();
     } else {
-        createWindow();
+        createWindow(url, null);
     }
     prepareOverlay();
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) {
-            createWindow();
-        }
-    })
+    //app.on('activate', () => {
+    //    if (BrowserWindow.getAllWindows().length === 0) {
+    //        createWindow();
+    //    }
+    //})
 });
 
 app.on('window-all-closed', () => {

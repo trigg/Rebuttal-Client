@@ -527,6 +527,52 @@ video {
   background-color: black;
 }
 
+.browser {
+  display: flex;
+  background-color: black;
+  align-items: center;
+  justify-content: center;
+}
+
+.browserpane {
+  display: flex;
+  background-color: black;
+  border: 0px transparent solid;
+  border-radius: 20px;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.browsertabs {
+  display: flex;
+}
+
+.serverbuttons {
+  display: flex;
+}
+
+.browserbuttonlist {
+  display: flex;
+}
+
+.browserbutton {
+  display: flex;
+  flex-direction: column;
+  max-width: 400px;
+}
+
+.browserbuttonimg {
+  max-width: 100%;
+}
+
+.browserbuttontitle {
+  max-width: 100%;
+}
+
+.serverform {
+  display: flex;
+}
+
 .userlist {
   border-left: 1px solid #394a6d;
 }
