@@ -24,7 +24,7 @@ Rebuttal Client is a multimedia webchat system featuring text channels and Voice
 Clone this repository and run
 ```yarn install```
  to install and 
-```yarn run run``` #
+```yarn run run``` 
 to start electron client. 
 
 ## Customisation

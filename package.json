@@ -6,6 +6,7 @@
   "scripts": {
     "run": "electron --enable-transparent-visuals .",
     "run-overlay": "electron  --ignore-certificate-errors --enable-transparent-visuals --disable-gpu .",
+    "run-unsafe": "electron  --ignore-certificate-errors .",
     "test": "node test/index.js",
     "pack": "electron-builder --dir",
     "dist": "electron-builder -mwl",
