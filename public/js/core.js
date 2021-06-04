@@ -40,12 +40,15 @@ var overlayEnable = true;
 // Browser storage
 
 var theme = null;
+var soundtheme = null;
 var font = null;
 var themelist = [];
+var soundlist = [];
 
 // Functions to allow to be used in console
 var markupParser;
 var changeTheme;
+var changeSoundTheme;
 var changeFont;
 var toggleSettings;
 var toggleServer;
@@ -60,6 +63,8 @@ var playToGroup;
 var send;
 var connect;
 var populateRoom;
+var playSound;
+
 
 getUserByID = (id) => {
     var ret = null;

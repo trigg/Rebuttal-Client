@@ -488,6 +488,7 @@ onstart.push(() => {
                 showApp();
                 setLoginMessage('');
                 iam = userid;
+                playSound('login');
             } else {
                 showLogin();
                 setLoginMessage('Invalid email or password');
@@ -520,6 +521,10 @@ onstart.push(() => {
         },
         "joinRoom": (data) => {
             const { userid, roomid } = data;
+            if (roomid == currentView) {
+                // Someone joined our room
+                playSound('voicejoin');
+            }
             if (userid === iam) {
                 currentView = roomid;
             }
@@ -538,11 +543,17 @@ onstart.push(() => {
             }
         },
         "leaveRoom": (data) => {
-            const { userid } = data;
+            const { userid, roomid } = data;
+            if (roomid === currentView) {
+                // Someone left our room
+                playSound('voiceleave');
+            }
             if (userid === iam) {
                 currentView = null;
                 peerConnection = [];
                 remoteWebcamStream = [];
+                playSound('voiceleave');
+
             } else {
                 cleanupStream(userid);
             }
@@ -635,6 +646,7 @@ onstart.push(() => {
                 console.log(message);
                 new Notification(user.name + " : " + message.text);
             }
+            playSound("newmessage");
         },
         'servermute': (data) => {
             var { userid, message } = data;
