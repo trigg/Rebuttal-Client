@@ -108,6 +108,18 @@ window.onload = () => {
         e.preventDefault();
 
         var ip = el.serverip.value;
+        // Strip wrong prefix
+        ip.replace(/^https?:\/\//, '');
+        // Fix prefix
+        if (ip.indexOf('wss://') !== 0 && ip.indexOf('ws://')) {
+            ip = 'wss://' + ip;
+        }
+        // Remove trailing slash
+        ip.replace(/\/$/, '');
+        // Fix postfix
+        if (id.indexOf('/ipc') === -1) {
+            ip = ip + "/ipc";
+        }
 
         var server = { host: ip, name: '', img: '', users: [], url: '/public/' };
 
