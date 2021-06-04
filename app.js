@@ -113,9 +113,12 @@ function prepareOverlay() {
             keytar.getPassword('Rebuttal-' + a.host, a.user).then(
                 pass => {
                     createWindow(a.host, a.user, pass);
+                    lastwin.close();
                 }).catch(err => {
                     console.log(err);
                 });
+
+            return;
         }
         createWindow(a.host, null, null);
         lastwin.close();
