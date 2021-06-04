@@ -2,6 +2,24 @@
 var el = {};
 var markupParser = null;
 
+window.ipc.recv('setServerAccounts', (a, e) => {
+    console.log(e);
+    console.log(a);
+    var ele = document.getElementById('browserbuttonlist-' + a.server);
+    if (!ele) { return; }
+    ele.innerText = '';
+
+    a.list.forEach(un => {
+        var div = document.createElement('div');
+        div.onclick = () => {
+            console.log("Server chosen");
+            window.ipc.send('connectToServer', { host: a.server, user: un });
+        }
+        div.innerText = un;
+        ele.appendChild(div);
+    })
+})
+
 const changeTheme = (themeName) => {
     // Change CSS
     theme = themeName;
@@ -70,8 +88,11 @@ const replaceButtons = () => {
         title.className = 'browserbuttontitle';
         title.innerHTML = markupParser.makeHtml(server.name);
         img.src = server.url + server.img;
+        var userList = document.createElement('div');
+        userList.id = 'browserbuttonlist-' + server.host;
         button.appendChild(img);
         button.appendChild(title);
+        button.appendChild(userList);
         div.appendChild(button);
 
         title.onclick = img.onclick = () => {
@@ -83,6 +104,11 @@ const replaceButtons = () => {
     });
     el.serverbuttons.innerText = '';
     el.serverbuttons.appendChild(div);
+
+    JSON.parse(getConfig('serverList', "[]")).forEach(server => {
+        window.ipc.send('getServerAccounts', server.host);
+    });
+
 };
 
 window.onload = () => {

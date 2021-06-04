@@ -440,7 +440,6 @@ onstart.push(() => {
             customUrl = customUrl.replace(/^https/i, 'wss');
             customUrl = customUrl.replace(/^http/i, 'ws');
             ws = new WebSocket(customUrl);
-
         }
         ws.onmessage = (message) => {
             const data = JSON.parse(message.data);
@@ -467,6 +466,13 @@ onstart.push(() => {
 
             themelist = data.themelist;
             updateThemesInSettings();
+
+            if (customUsername && customPassword) {
+                send({ type: 'login', email: customUsername, password: customPassword });
+                // If the details are no longer correct, don't go into an infinite login loop
+                customUsername = null;
+                customPassword = null;
+            }
         },
         "error": (data) => {
             el.loginReply.innerHTML = el.signupReply.innerHTML = markupParser.makeHtml(data.message);
@@ -568,12 +574,21 @@ onstart.push(() => {
                     }
                     peerConnection[fromuserid].setRemoteDescription(new RTCSessionDescription(payload));
                     peerConnection[fromuserid].createAnswer()
-                        .then((sD) => { peerConnection[fromuserid].setLocalDescription(sD); send({ payload: sD, type: 'video', fromuserid: touserid, touserid: fromuserid }) })
+                        .then(
+                            (sD) => {
+                                peerConnection[fromuserid].setLocalDescription(sD); send({ payload: sD, type: 'video', fromuserid: touserid, touserid: fromuserid })
+                            })
+                        .catch(err => {
+                            console.log(err);
+                        })
                     break;
                 case "answer":
                     peerConnection[fromuserid].setRemoteDescription(new RTCSessionDescription(payload))
-                        .then(() => send({ payload: peerConnection[fromuserid].localDescription, type: 'video', fromuserid: touserid, touserid: fromuserid })
-                        );
+                        .then(
+                            () => send({ payload: peerConnection[fromuserid].localDescription, type: 'video', fromuserid: touserid, touserid: fromuserid })
+                        ).catch(err => {
+                            console.log(err);
+                        });
                     break;
                 case "candidate":
                     if (peerConnection[fromuserid]) {
@@ -713,6 +728,7 @@ onstart.push(() => {
         el.loginReply.innerText = ''
         if (email) {
             if (password) {
+                if (electronMode) { window.ipc.send('savepassword', { server: customUrl, email, password }); }
                 send({ type: 'login', email, password });
                 startLocalDevices();
                 Notification.requestPermission();

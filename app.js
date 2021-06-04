@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const path = require("path")
+const keytar = require('keytar');
 var url = app.commandLine.getSwitchValue('url');
 
 var disableOverlay = false;
@@ -107,12 +108,37 @@ function prepareOverlay() {
     }
     ipcMain.on('connectToServer', function (e, a) {
         var lastwin = win;
-        createWindow(a.host, a.user);
+        var pass = null;
+        if (a.user) {
+            keytar.getPassword('Rebuttal-' + a.host, a.user).then(
+                pass => {
+                    createWindow(a.host, a.user, pass);
+                }).catch(err => {
+                    console.log(err);
+                });
+        }
+        createWindow(a.host, null, null);
         lastwin.close();
+    });
+    ipcMain.on('savepassword', function (e, a) {
+        keytar.setPassword('Rebuttal-' + a.server, a.email, a.password);
+    });
+    ipcMain.on('getServerAccounts', function (e, a) {
+        console.log("Getting account for : " + a);
+        console.log(a);
+        keytar.findCredentials('Rebuttal-' + a).then(res => {
+            var uList = [];
+            res.forEach(acc => {
+                uList.push(acc['account']);
+            });
+            win.webContents.send('setServerAccounts', { server: a, list: uList });
+        }).catch(a => {
+            console.log('Err');
+        });
     });
 }
 
-function createWindow(url, username) {
+function createWindow(url, username, password) {
     win = new BrowserWindow({
         width: 600,
         height: 400,
@@ -125,6 +151,9 @@ function createWindow(url, username) {
     win.loadFile('public/index.html');
 
     win.once('ready-to-show', () => {
+        if (password) {
+            win.webContents.executeJavaScript('customUsername="' + username + '"; customPassword="' + password + '"')
+        }
         win.webContents.executeJavaScript("customUrl = '" + url + "';console.log('" + url + "'); connect();");
         win.show();
         win.setAutoHideMenuBar(true);
@@ -143,6 +172,8 @@ app.whenReady().then(() => {
     //        createWindow();
     //    }
     //})
+}).catch(err => {
+    console.log(err);
 });
 
 app.on('window-all-closed', () => {

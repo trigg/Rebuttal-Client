@@ -34,6 +34,8 @@ var autocompletestart = 0;
 var autocompleteselection = 0;
 var electronMode = false;
 var customUrl = null;
+var customUsername = null;
+var customPassword = null;
 var overlayEnable = true;
 // Browser storage
 
