@@ -21,8 +21,11 @@ Rebuttal Client is a multimedia webchat system featuring text channels and Voice
 
 ## Installation
 
-Install this repository and run `yarn client -- --url=https://127.0.0.1:9000/ipc` in the root. Naturally change the url to point to a running IPC URI on a server
-
+Clone this repository and run
+```yarn install```
+ to install and 
+```yarn run run``` #
+to start electron client. 
 
 ## Customisation
 
