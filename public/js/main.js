@@ -651,16 +651,16 @@ onstart.push(() => {
         },
         'servermute': (data) => {
             var { userid, message } = data;
-            var sideuser = document.getElementById('user-' + uuid)
-            var videouser = document.getElementById('videodiv-' + uuid);
+            var sideuser = document.getElementById('user-' + userid)
+            var videouser = document.getElementById('videodiv-' + userid);
             if (message) {
                 sideuser.classList.add('usermuted');
                 if (videouser) { videouser.classList.add('videodivmuted'); }
-                if (electronMode) { window.ipc.send('muted', uuid); }
+                if (electronMode) { window.ipc.send('muted', userid); }
             } else {
                 sideuser.classList.remove('usermuted');
                 if (videouser) { videouser.classList.remove('videodivmuted'); }
-                if (electronMode) { window.ipc.send('unmuted', uuid); }
+                if (electronMode) { window.ipc.send('unmuted', userid); }
             }
         },
         'talking': (data) => {
