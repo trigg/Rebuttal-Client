@@ -1623,8 +1623,8 @@ onstart.push(() => {
         var a = {
             sampleSize: 16,
             channelCount: 1,
-            echoCancellation: getConfig('echocancel'),
-            noiseSuppression: getConfig('noisesupress'),
+            echoCancellation: getConfig('echocancel', true),
+            noiseSuppression: getConfig('noisesupress', true),
             sampleRate: getConfig('audiobitrate', 96) * 1000
         };
         if (deviceId) { a.deviceId = deviceId };
