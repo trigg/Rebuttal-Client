@@ -132,7 +132,7 @@ window.onload = () => {
 
     el.serverform.onsubmit = (e) => {
         e.preventDefault();
-
+        el.serverformmsg.innerText='';
         var ip = el.serverip.value;
         // Strip wrong prefix
         ip.replace(/^https?:\/\//, '');
@@ -143,7 +143,7 @@ window.onload = () => {
         // Remove trailing slash
         ip.replace(/\/$/, '');
         // Fix postfix
-        if (id.indexOf('/ipc') === -1) {
+        if (ip.indexOf('/ipc') === -1) {
             ip = ip + "/ipc";
         }
 
@@ -170,7 +170,8 @@ window.onload = () => {
             }
             clearTimeout(timeout);
         };
-        ws.onclose = () => {
+        ws.onclose = (e) => {
+            el.serverformmsg.innerText='Connection failed: Check address';
             ws.close();
             clearTimeout(timeout);
         }

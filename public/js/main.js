@@ -488,6 +488,7 @@ onstart.push(() => {
                 showApp();
                 setLoginMessage('');
                 iam = userid;
+                playSound('login');
             } else {
                 showLogin();
                 setLoginMessage('Invalid email or password');
@@ -520,6 +521,10 @@ onstart.push(() => {
         },
         "joinRoom": (data) => {
             const { userid, roomid } = data;
+            if (roomid == currentView) {
+                // Someone joined our room
+                playSound('voicejoin');
+            }
             if (userid === iam) {
                 currentView = roomid;
             }
@@ -538,11 +543,17 @@ onstart.push(() => {
             }
         },
         "leaveRoom": (data) => {
-            const { userid } = data;
+            const { userid, roomid } = data;
+            if (roomid === currentView) {
+                // Someone left our room
+                playSound('voiceleave');
+            }
             if (userid === iam) {
                 currentView = null;
                 peerConnection = [];
                 remoteWebcamStream = [];
+                playSound('voiceleave');
+
             } else {
                 cleanupStream(userid);
             }
@@ -634,6 +645,35 @@ onstart.push(() => {
                 var user = getUserByID(message.userid);
                 console.log(message);
                 new Notification(user.name + " : " + message.text);
+            }
+            playSound("newmessage");
+        },
+        'servermute': (data) => {
+            var { userid, message } = data;
+            var sideuser = document.getElementById('user-' + uuid)
+            var videouser = document.getElementById('videodiv-' + uuid);
+            if (message) {
+                sideuser.classList.add('usermuted');
+                if (videouser) { videouser.classList.add('videodivmuted'); }
+                if (electronMode) { window.ipc.send('muted', uuid); }
+            } else {
+                sideuser.classList.remove('usermuted');
+                if (videouser) { videouser.classList.remove('videodivmuted'); }
+                if (electronMode) { window.ipc.send('unmuted', uuid); }
+            }
+        },
+        'talking': (data) => {
+            var { userid, message } = data;
+            var sideuser = document.getElementById('user-' + uuid)
+            var videouser = document.getElementById('videodiv-' + uuid);
+            if (message) {
+                sideuser.classList.add('usertalking');
+                if (videouser) { videouser.classList.add('videodivtalking'); }
+                if (electronMode) { window.ipc.send('talkstart', uuid); }
+            } else {
+                sideuser.classList.remove('usertalking');
+                if (videouser) { videouser.classList.remove('videodivtalking'); }
+                if (electronMode) { window.ipc.send('talkstop', uuid); }
             }
         }
     }
@@ -843,6 +883,7 @@ onstart.push(() => {
                         if (el.settingFlipWebcam.checked) {
                             video.style.transform = 'rotateY(180deg)';
                         }
+                        prepareSoundReader(video.srcObject, user.id, audiometer);
                     }
                 } else {
                     if (user.id in remoteWebcamStream) {
@@ -850,9 +891,6 @@ onstart.push(() => {
                     } else {
                         startCall(user.id);
                     }
-                }
-                if (video.srcObject) {
-                    prepareSoundReader(video.srcObject, user.id, audiometer);
                 }
 
             });
@@ -1349,9 +1387,9 @@ onstart.push(() => {
                 ele2.srcObject = stream;
             }
         }
-        if (ele && ele.srcObject) {
-            prepareSoundReader(ele.srcObject, userid, document.getElementById('meter-' + userid));
-        }
+        //if (ele && ele.srcObject) {
+        //    prepareSoundReader(ele.srcObject, userid, document.getElementById('meter-' + userid));
+        //}
     }
 
     const prepareSoundReader = (src, uuid, meter) => {
@@ -1367,10 +1405,12 @@ onstart.push(() => {
                     sideuser.classList.add('usertalking');
                     if (videouser) { videouser.classList.add('videodivtalking'); }
                     if (electronMode) { window.ipc.send('talkstart', uuid); }
+                    send({ type: 'talking', userid: uuid, message: 'talking' });
                 } else {
                     sideuser.classList.remove('usertalking');
                     if (videouser) { videouser.classList.remove('videodivtalking'); }
                     if (electronMode) { window.ipc.send('talkstop', uuid); }
+                    send({ type: 'talking', userid: uuid, message: null });
                 }
             }, 200);
         });
@@ -1551,22 +1591,26 @@ onstart.push(() => {
         console.log("AudioStream : " + (!isMute) + " VideoStream : " + isWebcam + " isVideoChat : " + isInVoiceRoom());
         if (isInVoiceRoom()) {
             // Set all local audio streams
-            localWebcamStream.getAudioTracks().forEach((audio) => {
-                audio.enabled = !isMute;
-            });
-            // Set all local video streams
-            localWebcamStream.getVideoTracks().forEach((video) => {
-                video.enabled = isWebcam;
-            });
+            if (localWebcamStream) {
+                localWebcamStream.getAudioTracks().forEach((audio) => {
+                    audio.enabled = !isMute;
+                });
+                // Set all local video streams
+                localWebcamStream.getVideoTracks().forEach((video) => {
+                    video.enabled = isWebcam;
+                });
+            }
         } else {
-            // Set all local audio streams
-            localWebcamStream.getAudioTracks().forEach((audio) => {
-                audio.enabled = false;
-            });
-            // Set all local video streams
-            localWebcamStream.getVideoTracks().forEach((video) => {
-                video.enabled = false;
-            });
+            if (localWebcamStream) {
+                // Set all local audio streams
+                localWebcamStream.getAudioTracks().forEach((audio) => {
+                    audio.enabled = false;
+                });
+                // Set all local video streams
+                localWebcamStream.getVideoTracks().forEach((video) => {
+                    video.enabled = false;
+                });
+            }
         }
     }
 
@@ -1739,8 +1783,10 @@ onstart.push(() => {
 
     showdown.setOption('tables', true);
 
-    // Connect to WS
-    connect();
+    // Connect to W
+    if (!electronMode) {
+        connect();
+    }
 
     markupParser = new showdown.Converter();
     updatePerms();
