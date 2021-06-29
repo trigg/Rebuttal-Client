@@ -1620,7 +1620,7 @@ onstart.push(() => {
         var deviceId = getConfig('microphonedevice', 'none');
         deviceId = (deviceId === 'undefined') ? 'none' : deviceId;
         deviceId = (deviceId !== 'none') ? { exact: deviceId } : undefined;
-        a = {
+        var a = {
             sampleSize: 16,
             channelCount: 1,
             echoCancellation: getConfig('echocancel'),
@@ -1634,7 +1634,7 @@ onstart.push(() => {
         var deviceId = getConfig('cameradevice', 'none');
         deviceId = (deviceId === 'undefined') ? 'none' : deviceId;
         deviceId = (deviceId !== 'none') ? { exact: deviceId } : undefined;
-        a = {
+        var a = {
             width: { min: 640, ideal: 1280 },
             height: { min: 400, ideal: 720 },
             framerate: 30
