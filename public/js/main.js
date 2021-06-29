@@ -665,16 +665,16 @@ onstart.push(() => {
         },
         'talking': (data) => {
             var { userid, message } = data;
-            var sideuser = document.getElementById('user-' + uuid)
-            var videouser = document.getElementById('videodiv-' + uuid);
+            var sideuser = document.getElementById('user-' + userid)
+            var videouser = document.getElementById('videodiv-' + userid);
             if (message) {
                 sideuser.classList.add('usertalking');
                 if (videouser) { videouser.classList.add('videodivtalking'); }
-                if (electronMode) { window.ipc.send('talkstart', uuid); }
+                if (electronMode) { window.ipc.send('talkstart', userid); }
             } else {
                 sideuser.classList.remove('usertalking');
                 if (videouser) { videouser.classList.remove('videodivtalking'); }
-                if (electronMode) { window.ipc.send('talkstop', uuid); }
+                if (electronMode) { window.ipc.send('talkstop', userid); }
             }
         }
     }
