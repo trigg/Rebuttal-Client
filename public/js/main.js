@@ -1499,6 +1499,10 @@ onstart.push(() => {
             .then(updateInputsInSettings)
             .catch(err => {
                 console.error("error:" + err);
+                if (!noWebcamFound) {
+                    noWebcamFound = true;
+                    startLocalDevices();
+                }
                 // Put 'Any' back in. At this point we've lost our custom device list
                 updateInputsInSettings(null);
             });
@@ -1631,6 +1635,9 @@ onstart.push(() => {
         return a;
     }
     const createVideoConstraints = () => {
+        if (noWebcamFound) {
+            return false;
+        }
         var deviceId = getConfig('cameradevice', 'none');
         deviceId = (deviceId === 'undefined') ? 'none' : deviceId;
         deviceId = (deviceId !== 'none') ? { exact: deviceId } : undefined;

@@ -37,6 +37,7 @@ var customUrl = null;
 var customUsername = null;
 var customPassword = null;
 var overlayEnable = true;
+var noWebcamFound = false;
 // Browser storage
 
 var theme = null;
