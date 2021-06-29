@@ -390,6 +390,7 @@ onstart.push(() => {
             }
             elementRoom.onclick = () => {
                 switchRoom(room.id);
+                startLocalDevices();
             }
             var textRoom = div({ className: 'roomtext' });
             var imageRoom
@@ -1619,25 +1620,27 @@ onstart.push(() => {
         var deviceId = getConfig('microphonedevice', 'none');
         deviceId = (deviceId === 'undefined') ? 'none' : deviceId;
         deviceId = (deviceId !== 'none') ? { exact: deviceId } : undefined;
-        return {
+        a = {
             sampleSize: 16,
             channelCount: 1,
             echoCancellation: getConfig('echocancel'),
             noiseSuppression: getConfig('noisesupress'),
-            sampleRate: getConfig('audiobitrate', 96) * 1000,
-            deviceId
+            sampleRate: getConfig('audiobitrate', 96) * 1000
         };
+        if (deviceId) { a.deviceId = deviceId };
+        return a;
     }
     const createVideoConstraints = () => {
         var deviceId = getConfig('cameradevice', 'none');
         deviceId = (deviceId === 'undefined') ? 'none' : deviceId;
         deviceId = (deviceId !== 'none') ? { exact: deviceId } : undefined;
-        return {
+        a = {
             width: { min: 640, ideal: 1280 },
             height: { min: 400, ideal: 720 },
-            framerate: 30,
-            deviceId
+            framerate: 30
         };
+        if (deviceId) { a.deviceId = deviceId; }
+        return a;
     }
     const createConstraints = () => {
         var constraints = {
