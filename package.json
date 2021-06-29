@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "run": "electron --enable-transparent-visuals .",
+    "run": "electron --ignore-certificate-errors .",
     "run-overlay": "electron  --ignore-certificate-errors --enable-transparent-visuals --disable-gpu .",
     "test": "node test/index.js",
     "pack": "electron-builder --dir",
