@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "run": "electron --ignore-certificate-errors .",
+    "run": "electron .",
     "run-overlay": "electron  --ignore-certificate-errors --enable-transparent-visuals --disable-gpu .",
     "run-unsafe": "electron  --ignore-certificate-errors .",
     "test": "node test/index.js",

@@ -196,7 +196,7 @@ onstart.push(() => {
     }
 
     const isInVoiceRoom = () => {
-        var room = getRoom(currentView);
+        var room = getRoom(currentVoiceRoom);
         if (room && room.type === 'voice') {
             return true;
         }
@@ -371,7 +371,7 @@ onstart.push(() => {
 
     const setRoomList = (roomList) => {
         if (electronMode) {
-            var room = getRoom(currentView);
+            var room = getRoom(currentVoiceRoom);
             if (room) {
                 window.ipc.send('userlist', room.userlist);
             }
@@ -383,7 +383,7 @@ onstart.push(() => {
                 e.preventDefault();
                 var list = [];
                 if (room.type == 'voice') {
-                    if (currentView == room.id) {
+                    if (currentVoiceRoom == room.id) {
                         // User is in this room
                         list.push({ text: "Leave chat", callback: () => { switchRoom(null) } });
                     } else {
@@ -422,6 +422,7 @@ onstart.push(() => {
             textRoom.innerText = room.name;
 
             room.userlist.forEach((user) => {
+                var user = getUserByID(user.id);
                 var elementUser = div({ className: 'user', id: 'user-' + user.id });
                 var textUser = div({ className: 'usertext' });
                 var imageUser = document.createElement('img');
@@ -432,6 +433,53 @@ onstart.push(() => {
                 elementUser.appendChild(imageUser);
                 elementUser.appendChild(textUser);
 
+                elementUser.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    var list = [];
+                    list.push({
+                        text: 'Volume', slider: getConfig('volume-' + user.id, 1.0), callback: (e) => {
+                            setConfig('volume-' + user.id, e.target.value);
+                            var video = document.getElementById('video-' + user.id);
+                            if (video) {
+                                video.setAttribute('volume', e.target.value);
+                            }
+                        }
+                    });
+                    if (hasPerm('renameUser') || user.id === iam) {
+                        list.push({
+                            text: 'Change user name',
+                            callback: () => {
+                                popupChangeUserName(user);
+                            },
+                            class: 'contextrenameuser'
+                        });
+                    }
+                    if (hasPerm('setUserGroup')) {
+                        list.push({
+                            text: 'Change user group',
+                            callback: () => {
+                                popupChangeUserGroup(user);
+                            },
+                            class: 'contextsetusergroup'
+                        });
+                    }
+                    if (hasPerm('removeUser') && user.id !== iam) {
+                        list.push({
+                            text: 'Delete User',
+                            callback: () => {
+                                openConfirmContext('Confirm delete ' + user.name, 'DELETE USER', () => {
+                                    send({
+                                        type: 'removeuser',
+                                        userid: user.id
+                                    });
+                                })
+                            },
+                            class: 'contextremoveuser'
+                        });
+                    }
+                    showContextMenu(list, mouseX(e), mouseY(e))
+
+                }
                 usersInRoom.appendChild(elementUser);
             });
 
@@ -463,7 +511,6 @@ onstart.push(() => {
         }
         ws.onmessage = (message) => {
             const data = JSON.parse(message.data);
-            console.log(data);
             if (data['type'] in wsFunc) {
                 wsFunc[data['type']](data);
             } else {
@@ -543,14 +590,14 @@ onstart.push(() => {
         },
         "joinRoom": (data) => {
             const { userid, roomid } = data;
-            if (roomid == currentView) {
+            if (roomid == currentVoiceRoom) {
                 // Someone joined our room
                 playSound('voicejoin');
             }
             if (userid === iam) {
-                currentView = roomid;
+                currentVoiceRoom = roomid;
             }
-            if (currentView) {
+            if (currentVoiceRoom) {
                 updateDeviceState();
             }
         },
@@ -566,12 +613,12 @@ onstart.push(() => {
         },
         "leaveRoom": (data) => {
             const { userid, roomid } = data;
-            if (roomid === currentView) {
+            if (roomid === currentVoiceRoom) {
                 // Someone left our room
                 playSound('voiceleave');
             }
             if (userid === iam) {
-                currentView = null;
+                currentVoiceRoom = null;
                 peerConnection = [];
                 remoteWebcamStream = [];
                 playSound('voiceleave');
@@ -689,11 +736,11 @@ onstart.push(() => {
             var sideuser = document.getElementById('user-' + userid)
             var videouser = document.getElementById('videodiv-' + userid);
             if (message) {
-                sideuser.classList.add('usertalking');
+                if (sideuser) { sideuser.classList.add('usertalking'); }
                 if (videouser) { videouser.classList.add('videodivtalking'); }
                 if (electronMode) { window.ipc.send('talkstart', userid); }
             } else {
-                sideuser.classList.remove('usertalking');
+                if (sideuser) { sideuser.classList.remove('usertalking'); }
                 if (videouser) { videouser.classList.remove('videodivtalking'); }
                 if (electronMode) { window.ipc.send('talkstop', userid); }
             }
@@ -814,6 +861,7 @@ onstart.push(() => {
 
     populateRoom = () => {
         var room = getRoom(currentView);
+        var voiceroom = getRoom(currentVoiceRoom);
         if (!room) {
             el.appCoreView.innerText = '';
             return;
@@ -921,6 +969,9 @@ onstart.push(() => {
             }
             contents.appendChild(voiceDiv);
         } else if (room.type === 'text') {
+            if (currentVoiceRoom) {
+                // TODO Elements for each user we are connected to, to avoid losing sound
+            }
 
             var scrollingDiv = div({ className: 'chatscroller', id: 'chatscroller' });
             new ResizeObserver(entries => {
@@ -1290,13 +1341,21 @@ onstart.push(() => {
     }
 
     const switchRoom = (roomid) => {
+        // Same room chosen = noop
         if (currentView === roomid) { return; }
+
         // Close all opened connections
         Object.values(peerConnection).forEach((pc) => {
             pc.close();
         });
+
         // Change our view
+        if (getRoom(roomid).type === 'voice') {
+
+            currentVoiceRoom = roomid;
+        }
         currentView = roomid;
+
         populateRoom();
         updateDeviceState();
         if (electronMode) {
@@ -1540,7 +1599,12 @@ onstart.push(() => {
     const replacePeerMedia = (pc) => {
         if (pc.getSenders().length === 3) {
             if (localWebcamStream) {
-                pc.getSenders()[0].replaceTrack(localWebcamStream.getVideoTracks()[0]);
+                if (localWebcamStream.getVideoTracks().length > 0) {
+                    pc.getSenders()[0].replaceTrack(localWebcamStream.getVideoTracks()[0]);
+                } else {
+                    pc.getSenders()[0].replaceTrack(whiteNoiseStream.getTracks[0]);
+                }
+
                 pc.getSenders()[1].replaceTrack(localWebcamStream.getAudioTracks()[0]);
             }
             if (localLiveStream) {
@@ -1548,7 +1612,11 @@ onstart.push(() => {
             }
         } else {
             if (localWebcamStream) {
-                pc.addTrack(localWebcamStream.getVideoTracks()[0], localWebcamStream);
+                if (localWebcamStream.getVideoTracks().length > 0) {
+                    pc.addTrack(localWebcamStream.getVideoTracks()[0], localWebcamStream);
+                } else {
+                    pc.addTrack(whiteNoiseStream.getTracks[0]);
+                }
                 pc.addTrack(localWebcamStream.getAudioTracks()[0], localWebcamStream);
             } else {
                 console.log("Damnit Craig");

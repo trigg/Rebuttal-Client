@@ -10,6 +10,7 @@ var roomlist = [];
 var userlist = [];
 var messagelist = [];
 var currentView = '';
+var currentVoiceRoom = '';
 var iam = null;
 var localWebcamStream = null;
 var localLiveStream = null;
