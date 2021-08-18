@@ -1603,7 +1603,7 @@ onstart.push(() => {
                     pc.getSenders()[0].replaceTrack(localWebcamStream.getVideoTracks()[0]);
                 } else {
                     var whiteNoiseStream = whiteNoise();
-                    pc.getSenders()[0].replaceTrack(whiteNoiseStream.getTracks[0]);
+                    pc.getSenders()[0].replaceTrack(whiteNoiseStream.getTracks()[0]);
                 }
 
                 pc.getSenders()[1].replaceTrack(localWebcamStream.getAudioTracks()[0]);
@@ -1617,7 +1617,7 @@ onstart.push(() => {
                     pc.addTrack(localWebcamStream.getVideoTracks()[0], localWebcamStream);
                 } else {
                     var whiteNoiseStream = whiteNoise();
-                    pc.addTrack(whiteNoiseStream.getTracks[0]);
+                    pc.addTrack(whiteNoiseStream.getTracks()[0]);
                 }
                 pc.addTrack(localWebcamStream.getAudioTracks()[0], localWebcamStream);
             } else {
