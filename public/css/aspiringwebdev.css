@@ -115,15 +115,21 @@ html {
 }
 
 .contextmenuouter {
-  position: relative;
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  display: none;
   cursor: default;
+  z-index: 5;
+}
+
+.contextremoveroom, .contextremoveuser {
+  background-color: #ff000044;
 }
 
 .contextmenu {
   position: absolute;
   cursor: default;
-  left: -1000px;
-  top: -1000px;
   z-index: 5;
   background-color: lightcyan;
   border: #394a6d 1px solid;

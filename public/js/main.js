@@ -247,28 +247,34 @@ onstart.push(() => {
                 });
                 if (hasPerm('renameUser') || user.id === iam) {
                     list.push({
-                        text: 'Change user name', callback: () => {
+                        text: 'Change user name',
+                        callback: () => {
                             popupChangeUserName(user);
-                        }
+                        },
+                        class: 'contextrenameuser'
                     });
                 }
                 if (hasPerm('setUserGroup')) {
                     list.push({
-                        text: 'Change user group', callback: () => {
+                        text: 'Change user group',
+                        callback: () => {
                             popupChangeUserGroup(user);
-                        }
+                        },
+                        class: 'contextsetusergroup'
                     });
                 }
                 if (hasPerm('removeUser') && user.id !== iam) {
                     list.push({
-                        text: 'Delete User', callback: () => {
+                        text: 'Delete User',
+                        callback: () => {
                             openConfirmContext('Confirm delete ' + user.name, 'DELETE USER', () => {
                                 send({
                                     type: 'removeuser',
                                     userid: user.id
                                 });
                             })
-                        }
+                        },
+                        class: 'contextremoveuser'
                     });
                 }
                 showContextMenu(list, mouseX(e), mouseY(e))
@@ -307,23 +313,23 @@ onstart.push(() => {
 
     const showContextMenu = (list, x, y) => {
         el.contextmenu.style.display = 'none';
-        if (x > (window.width / 2)) {
+        if (x < (window.innerWidth / 2)) {
             x = x + 2;
-            el.contextmenu.style.right = x + "px"
-            delete el.contextmenu.style.left;
+            el.contextmenu.style.left = x + "px"
+            el.contextmenu.style.right = '';
         } else {
             x = x - 2;
-            el.contextmenu.style.left = x + "px"
-            delete el.contextmenu.style.right;
+            el.contextmenu.style.right = (window.innerWidth - x) + "px"
+            el.contextmenu.style.left = '';
         }
-        if (y > (window.height / 2)) {
+        if (y < (window.innerHeight / 2)) {
             y = y + 2;
-            el.contextmenu.style.bottom = y + "px"
-            delete el.contextmenu.style.top;
+            el.contextmenu.style.top = y + "px"
+            el.contextmenu.style.bottom = '';
         } else {
             y = y - 2;
-            el.contextmenu.style.top = y + "px"
-            delete el.contextmenu.style.bottom;
+            el.contextmenu.style.bottom = (window.innerHeight - y) + "px"
+            el.contextmenu.style.top = '';
         }
         el.contextmenu.innerHTML = '';
 
@@ -348,13 +354,18 @@ onstart.push(() => {
                 if ('callback' in item) {
                     itemdiv.onclick = () => { closeContextMenu(); item.callback(); };
                 }
+                if ('class' in item) {
+                    itemdiv.classList.add(item.class);
+                }
             }
             el.contextmenu.appendChild(itemdiv);
         })
         el.contextmenu.style.display = "block";
+        el.contextmenuouter.style.display = "block";
         el.contextmenu.onmouseleave = (e) => {
             delete el.contextmenu.onmouseout;
             el.contextmenu.style.display = 'none';
+            el.contextmenuouter.style.display = 'none';
         }
     }
 
@@ -380,10 +391,18 @@ onstart.push(() => {
                     }
                 }
                 if (hasPerm('renameRoom')) {
-                    list.push({ text: 'Change room name', callback: () => { popupChangeRoomName(room); } });
+                    list.push({
+                        text: 'Change room name',
+                        callback: () => { popupChangeRoomName(room); },
+                        class: 'contextrenameroom'
+                    });
                 }
                 if (hasPerm('removeRoom')) {
-                    list.push({ text: 'Delete room', callback: () => { } });
+                    list.push({
+                        text: 'Delete room',
+                        callback: () => { },
+                        class: 'contextremoveroom'
+                    });
                 }
                 showContextMenu(list, mouseX(e), mouseY(e))
 
@@ -989,7 +1008,8 @@ onstart.push(() => {
                                                 text: 'Edit Message',
                                                 callback: () => {
                                                     popupChangeMessage(message);
-                                                }
+                                                },
+                                                class: 'contexteditmessage'
                                             });
                                     }
                                     if (hasPerm('removeMessage')) {
@@ -998,7 +1018,8 @@ onstart.push(() => {
                                                 text: 'Delete Message',
                                                 callback: () => {
                                                     //TODO
-                                                }
+                                                },
+                                                class: 'contextremovemessage'
                                             }
                                         )
                                     }
