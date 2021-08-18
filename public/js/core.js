@@ -43,7 +43,23 @@ var noWebcamFound = false;
 var theme = null;
 var soundtheme = null;
 var font = null;
-var themelist = ['accounting', 'aspiringwebdev', 'bubblegum'];
+var themelist = [
+    {
+        "id": 'accounting',
+        "name": "Accounting department",
+        "description": "A straightforward theme for those with no joy left in their lives"
+    },
+    {
+        "id": 'aspiringwebdev',
+        "name": "Aspiring WebDev",
+        "description": "A theme as dark as your prospects of releasing a hit new Web App and become an overnight billionaire"
+    },
+    {
+        "id": 'bubblegum',
+        "name": "Bubblegum (default)",
+        "description": "A light hearted theme for those with a weak disposition"
+    }
+];
 var soundlist = [];
 
 // Functions to allow to be used in console
