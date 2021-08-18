@@ -38,6 +38,7 @@ var customUsername = null;
 var customPassword = null;
 var overlayEnable = true;
 var noWebcamFound = false;
+var sfxVolume = 0.5;
 // Browser storage
 
 var theme = null;

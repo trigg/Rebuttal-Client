@@ -17,4 +17,5 @@ const setConfig = (name, value) => {
 }
 
 theme = getConfig('theme', 'bubblegum');
+sfxVolume = getConfig('sfxvolume', 0.5);
 font = getConfig('font', null);

@@ -148,7 +148,6 @@
                             <input type='checkbox' id='settingEchoCancellation' />
                             <label for='settingEchoCancellation'>Use Echo Cancellation</label>
                         </div>
-
                         <div>
                             <label for='settingBitrate'>Audio bitrate</label>
                             <input type="range" min="16" max="128" value="24" class='slider' id='settingbitrate' />
@@ -156,7 +155,9 @@
                         </div>
 
                     </div>
+
                     <div class='settingsdevicesvideo'>
+                        <h4>Camera</h4>
                         <label for='settingscamdevice'>Device</label>
                         <div id="settingscamdevice" class="custom-select-wrapper">
                             <div class="custom-select">
@@ -174,6 +175,7 @@
                 </div>
                 <div class='settingspane' id='settingspaneoutput'>
                     <div class='settingsdevicesaudio'>
+                        <h4>Sound Output</h4>
                         <label for='settingsaudio'>Device</label>
                         <div id="settingsaudio" class="custom-select-wrapper">
                             <div class="custom-select">
@@ -186,10 +188,29 @@
                             </div>
                         </div>
                     </div>
+                    <div class='settingssfxvolume'>
+                        <label for='settingssfxvolume'>Sound Effect Volume</label>
+                        <input type='range' list='volumeticks' id='settingssfxvolume' min='0' max='100' step='1'>
+                        <span id='settingssfxvolumeoutput' data-postfix='%'></span>
+                        <datalist id='volumeticks'>
+                            <option value='0' label='0%'></option>
+                            <option value='10%' label='10%'></option>
+                            <option value='20%' label='20%'></option>
+                            <option value='30%' label='30%'></option>
+                            <option value='40%' label='40%'></option>
+                            <option value='50%' label='50%'></option>
+                            <option value='60%' label='60%'></option>
+                            <option value='70%' label='70%'></option>
+                            <option value='80%' label='80%'></option>
+                            <option value='90%' label='90%'></option>
+                            <option value='100%' label='100%'></option>
+                        </datalist>
+                    </div>
 
                 </div>
                 <div class='settingspane' id='settingspanestreaming'>
                     <div class='settingsdevicesstream'>
+                        <h4>Streaming</h4>
                         <div>
                             <label for='settingsstreamresolution'>Maximum Resolution</label>
                             <input type='range' list='resolutionticks' id='settingsstreamresolution' min='240'

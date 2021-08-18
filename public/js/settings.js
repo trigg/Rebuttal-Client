@@ -261,6 +261,7 @@ onstart.push(() => {
     setupSlider('audiobitrate', 64, el.settingbitrate, el.settingbitrateoutput, () => { startLocalDevices(); });
     setupSlider('streamresolution', 1080, el.settingsstreamresolution, el.settingsstreamresolutionoutput, () => { if (localLiveStream) { startLocalDevices(); } });
     setupSlider('streamrate', 30, el.settingsstreamrate, el.settingsstreamrateoutput, () => { if (localLiveStream) { startLocalDevices(); } });
+    setupSlider('sfxvolume', 50, el.settingssfxvolume, el.settingssfxvolumeoutput, () => { sfxVolume = el.settingssfxvolume.value / 100; setConfig('sfxvolume', el.settingssfxvolume.value / 100) })
 
     el.settingbutton.onclick = toggleSettings;
     el.settingsclose.onclick = toggleSettings;
