@@ -465,7 +465,9 @@ onstart.push(() => {
             el.signuplogo.src = el.loginlogo.src = data.icon;
             el.signuptitle.innerHTML = el.logintitle.innerHTML = markupParser.makeHtml(data.message);
 
-            themelist = data.themelist;
+            if (!electronMode) {
+                themelist = data.themelist;
+            }
             updateThemesInSettings();
 
             if (customUsername && customPassword) {

@@ -135,8 +135,10 @@ function prepareOverlay() {
                 uList.push(acc['account']);
             });
             win.webContents.send('setServerAccounts', { server: a, list: uList });
-        }).catch(a => {
-            console.log('Err');
+        }).catch(err => {
+            console.log('Unable to find accounts for : ' + a);
+            console.log(err);
+            console.log("You most likely have not installed libsecret and gnome-keyring")
         });
     });
 }

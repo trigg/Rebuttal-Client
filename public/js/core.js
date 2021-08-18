@@ -43,7 +43,7 @@ var noWebcamFound = false;
 var theme = null;
 var soundtheme = null;
 var font = null;
-var themelist = [];
+var themelist = ['accounting', 'aspiringwebdev', 'bubblegum'];
 var soundlist = [];
 
 // Functions to allow to be used in console
