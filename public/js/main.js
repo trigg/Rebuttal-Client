@@ -1221,7 +1221,7 @@ onstart.push(() => {
             var inputbutton = document.createElement('input');
             inputbutton.setAttribute('type', 'image');
             inputbutton.setAttribute('alt', 'Send message');
-            inputbutton.dataset.src = 'img/' + theme + "/send.svg";
+            inputbutton.dataset.src = 'send.svg';
             inputbutton.src = 'img/' + theme + "/send.svg";
             input.className = 'chatroominput';
             inputtext.classList = 'chatroominputtext';
@@ -1696,7 +1696,7 @@ onstart.push(() => {
             if (localLiveStream) {
                 pc.getSenders()[2].replaceTrack(localLiveStream.getVideoTracks()[0]);
             }
-        } else if (sender == 0) {
+        } else if (senders == 0) {
             if (localWebcamStream) {
                 if (localWebcamStream.getVideoTracks().length > 0) {
                     pc.addTrack(localWebcamStream.getVideoTracks()[0], localWebcamStream);
