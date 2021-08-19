@@ -1597,7 +1597,8 @@ onstart.push(() => {
     }
 
     const replacePeerMedia = (pc) => {
-        if (pc.getSenders().length === 3) {
+        var senders = pc.getSenders().length;
+        if (senders === 3) {
             if (localWebcamStream) {
                 if (localWebcamStream.getVideoTracks().length > 0) {
                     pc.getSenders()[0].replaceTrack(localWebcamStream.getVideoTracks()[0]);
@@ -1611,7 +1612,7 @@ onstart.push(() => {
             if (localLiveStream) {
                 pc.getSenders()[2].replaceTrack(localLiveStream.getVideoTracks()[0]);
             }
-        } else {
+        } else if (sender == 0) {
             if (localWebcamStream) {
                 if (localWebcamStream.getVideoTracks().length > 0) {
                     pc.addTrack(localWebcamStream.getVideoTracks()[0], localWebcamStream);
@@ -1630,6 +1631,9 @@ onstart.push(() => {
                 console.log(whiteNoiseStream);
                 pc.addTrack(whiteNoiseStream.getTracks()[0], whiteNoiseStream);
             }
+        } else {
+            console.log("SENDERS " + senders);
+            throw new Error("Peer connection has wrong number of senders!");
         }
 
         console.log(pc);
