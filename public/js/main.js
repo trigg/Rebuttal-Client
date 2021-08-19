@@ -408,8 +408,11 @@ onstart.push(() => {
 
             }
             elementRoom.onclick = () => {
+                if (!localWebcamStream) {
+                    startLocalDevices();
+                }
                 switchRoom(room.id);
-                startLocalDevices();
+
             }
             var textRoom = div({ className: 'roomtext' });
             var imageRoom
@@ -969,8 +972,75 @@ onstart.push(() => {
             }
             contents.appendChild(voiceDiv);
         } else if (room.type === 'text') {
-            if (currentVoiceRoom) {
+            if (voiceroom) {
                 // TODO Elements for each user we are connected to, to avoid losing sound
+                var videoOverlayDiv = div({ className: 'chatWebcamOverlay', id: 'chatWebcamOverlay' })
+                voiceroom.userlist.forEach((user) => {
+
+                    // Create a Video element for voice chat
+                    var divid = div({ className: 'videodiv', id: 'videodiv-' + user.id });
+                    var video = document.createElement('video');
+                    video.setAttribute('autoPlay', true);
+                    video.setAttribute('playsInline', true);
+                    video.setAttribute('id', 'video-' + user.id);
+                    video.setAttribute('volume', getConfig('volume' - +user.id, 1.0));
+
+                    var audiometer = document.createElement('meter');
+                    audiometer.high = 0.15;
+                    audiometer.max = 0.5;
+                    audiometer.value = 0;
+                    audiometer.id = 'meter-' + user.id;
+                    audiometer.className = "videometer";
+                    var novid = img({ src: 'webcamoff.svg', id: "novideo-" + user.id, className: "videonovideo", alt: 'has no video stream', title: "No video" });
+                    var noaud = img({ src: 'micoff.svg', id: "noaudio-" + user.id, className: "videonoaudio", alt: 'has no audio stream', title: "No Audio" });
+                    divid.appendChild(audiometer);
+                    divid.appendChild(novid);
+                    divid.appendChild(noaud);
+
+                    divid.appendChild(video);
+                    videoOverlayDiv.appendChild(divid);
+                    if (user.livestate) {
+                        var livediv = div({ className: 'livediv' });
+                        var livevideo = document.createElement('video');
+                        livevideo.setAttribute('autoPlay', true);
+                        livevideo.setAttribute('playsInline', true);
+                        livevideo.setAttribute('id', 'live-' + user.id);
+                        if (user.id === iam) {
+                            if (localLiveStream !== null) {
+                                livevideo.srcObject = localLiveStream;
+                            }
+                        } else {
+                            if (user.id in remoteLiveStream) {
+                                livevideo.srcObject = remoteLiveStream[user.id];
+                            }
+                        }
+                        livediv.appendChild(livevideo);
+                        videoOverlayDiv.appendChild(livediv);
+                        count++;
+                    }
+
+                    // If Me
+                    if (user.id === iam) {
+                        video.muted = true;
+
+                        if (localWebcamStream !== null) {
+                            video.srcObject = localWebcamStream;
+                            video.classList.add('selfie');
+                            if (el.settingFlipWebcam.checked) {
+                                video.style.transform = 'rotateY(180deg)';
+                            }
+                            prepareSoundReader(video.srcObject, user.id, audiometer);
+                        }
+                    } else {
+                        if (user.id in remoteWebcamStream) {
+                            video.srcObject = remoteWebcamStream[user.id];
+                        } else {
+                            startCall(user.id);
+                        }
+                    }
+
+                });
+                contents.append(videoOverlayDiv);
             }
 
             var scrollingDiv = div({ className: 'chatscroller', id: 'chatscroller' });
@@ -1271,6 +1341,8 @@ onstart.push(() => {
         el.appCoreView.innerText = '';
         el.appCoreView.appendChild(contents);
         if (after) { after(); }
+
+        updateDeviceState();
     }
 
     const autoComplete = () => {
@@ -1343,17 +1415,27 @@ onstart.push(() => {
     const switchRoom = (roomid) => {
         // Same room chosen = noop
         if (currentView === roomid) { return; }
-
-        // Close all opened connections
-        Object.values(peerConnection).forEach((pc) => {
-            pc.close();
-        });
-
-        // Change our view
-        if (getRoom(roomid).type === 'voice') {
-
+        var room = getRoom(roomid);
+        // Moving TO a voice room
+        if (room && room.type === 'voice') {
+            if (roomid !== currentVoiceRoom) {
+                // From a different room, close connections
+                Object.values(peerConnection).forEach((pc) => {
+                    pc.close();
+                });
+            }
+            // Set new voice room
             currentVoiceRoom = roomid;
         }
+        // Leaving voice room
+        if (!room) {
+            // Close connections
+            Object.values(peerConnection).forEach((pc) => {
+                pc.close();
+            });
+            currentVoiceRoom = null;
+        }
+        // Set view
         currentView = roomid;
 
         populateRoom();
@@ -1563,10 +1645,10 @@ onstart.push(() => {
         if (localWebcamStream) {
             localWebcamStream.getTracks().forEach(track => track.stop());
         }
-        var ele = document.getElementById('video-' + iam);
         navigator.mediaDevices
             .getUserMedia(createConstraints())
             .then(stream => {
+                var ele = document.getElementById('video-' + iam);
                 if (ele) {
                     ele.srcObject = null;
                     ele.srcObject = stream;
