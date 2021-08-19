@@ -13,7 +13,8 @@
     "dist-win": "electron-builder -w --x64",
     "dist-linux": "electron-builder -l --x64",
     "dist-mac": "electron-builder -m --x64",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "sass": "cd public/css && sass accounting.scss:accounting.css aspiringwebdev.scss:aspiringwebdev.css bubblegum.scss:bubblegum.css"
   },
   "author": {
     "name": "trigg",
