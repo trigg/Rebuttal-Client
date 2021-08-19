@@ -4,7 +4,7 @@ function SoundReader(context) {
     this.talked = false;
     this.peak = 0.0;
     this.script = context.createScriptProcessor(2048, 1, 1);
-    context.destination = context.createMediaStreamDestination();
+    this.dest = context.createMediaStreamDestination();
     var ref = this;
     this.script.onaudioprocess = function (event) {
         const input = event.inputBuffer.getChannelData(0);
@@ -20,11 +20,7 @@ function SoundReader(context) {
                 break;
             }
         }
-        if (!talked) {
-            for (var i = 0; i < output.length; i++) {
-                output[i] = 0;
-            }
-        } else {
+        if (talked || !detectTalking) {
             for (var i = 0; i < output.length; i++) {
                 output[i] = input[i];
             }
@@ -38,8 +34,7 @@ SoundReader.prototype.connectToSource = function (stream, callback) {
     try {
         this.mic = this.context.createMediaStreamSource(stream);
         this.mic.connect(this.script);
-        //this.script.connect(this.dest);
-        this.script.connect(this.context.destination);
+        this.script.connect(this.dest);
 
         if (typeof callback !== 'undefined') {
             callback(null);
