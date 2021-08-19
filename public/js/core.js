@@ -13,6 +13,7 @@ var currentView = '';
 var currentVoiceRoom = '';
 var iam = null;
 var localWebcamStream = null;
+var localFilteredWebcamStream = null;
 var localLiveStream = null;
 var remoteWebcamStream = {};
 var remoteLiveStream = {};
@@ -40,6 +41,7 @@ var customPassword = null;
 var overlayEnable = true;
 var noWebcamFound = false;
 var sfxVolume = 0.5;
+var detectTalking = false;
 // Browser storage
 
 var theme = null;

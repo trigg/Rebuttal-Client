@@ -1,11 +1,14 @@
 'use strict';
 function SoundReader(context) {
     this.context = context;
-    this.talked = false
+    this.talked = false;
+    this.peak = 0.0;
     this.script = context.createScriptProcessor(2048, 1, 1);
+    context.destination = context.createMediaStreamDestination();
     var ref = this;
     this.script.onaudioprocess = function (event) {
         const input = event.inputBuffer.getChannelData(0);
+        var output = event.outputBuffer.getChannelData(0);
         var talked = false;
         var peak = 0.0;
         for (var i = 0; i < input.length; ++i) {
@@ -14,10 +17,20 @@ function SoundReader(context) {
             }
             if (Math.abs(input[i]) > 0.05) { //TODO Custom activity level
                 talked = true;
-                // break;
+                break;
+            }
+        }
+        if (!talked) {
+            for (var i = 0; i < output.length; i++) {
+                output[i] = 0;
+            }
+        } else {
+            for (var i = 0; i < output.length; i++) {
+                output[i] = input[i];
             }
         }
         ref.talked = talked;
+        ref.peak = peak;
     };
 }
 
@@ -25,7 +38,9 @@ SoundReader.prototype.connectToSource = function (stream, callback) {
     try {
         this.mic = this.context.createMediaStreamSource(stream);
         this.mic.connect(this.script);
+        //this.script.connect(this.dest);
         this.script.connect(this.context.destination);
+
         if (typeof callback !== 'undefined') {
             callback(null);
         }

@@ -913,15 +913,8 @@ onstart.push(() => {
                 video.setAttribute('id', 'video-' + user.id);
                 video.setAttribute('volume', getConfig('volume-' + user.id, 1.0));
 
-                var audiometer = document.createElement('meter');
-                audiometer.high = 0.15;
-                audiometer.max = 0.5;
-                audiometer.value = 0;
-                audiometer.id = 'meter-' + user.id;
-                audiometer.className = "videometer";
                 var novid = img({ src: 'webcamoff.svg', id: "novideo-" + user.id, className: "videonovideo", alt: 'has no video stream', title: "No video" });
                 var noaud = img({ src: 'micoff.svg', id: "noaudio-" + user.id, className: "videonoaudio", alt: 'has no audio stream', title: "No Audio" });
-                divid.appendChild(audiometer);
                 divid.appendChild(novid);
                 divid.appendChild(noaud);
 
@@ -953,11 +946,12 @@ onstart.push(() => {
 
                     if (localWebcamStream !== null) {
                         video.srcObject = localWebcamStream;
+                        video.muted = true;
+                        video.volume = 0.0;
                         video.classList.add('selfie');
                         if (el.settingFlipWebcam.checked) {
                             video.style.transform = 'rotateY(180deg)';
                         }
-                        prepareSoundReader(video.srcObject, user.id, audiometer);
                     }
                 } else {
                     if (user.id in remoteWebcamStream) {
@@ -987,15 +981,8 @@ onstart.push(() => {
                     video.setAttribute('id', 'video-' + user.id);
                     video.setAttribute('volume', getConfig('volume-' + user.id, 1.0));
 
-                    var audiometer = document.createElement('meter');
-                    audiometer.high = 0.15;
-                    audiometer.max = 0.5;
-                    audiometer.value = 0;
-                    audiometer.id = 'meter-' + user.id;
-                    audiometer.className = "videometer";
                     var novid = img({ src: 'webcamoff.svg', id: "novideo-" + user.id, className: "videonovideo", alt: 'has no video stream', title: "No video" });
                     var noaud = img({ src: 'micoff.svg', id: "noaudio-" + user.id, className: "videonoaudio", alt: 'has no audio stream', title: "No Audio" });
-                    divid.appendChild(audiometer);
                     divid.appendChild(novid);
                     divid.appendChild(noaud);
 
@@ -1027,11 +1014,12 @@ onstart.push(() => {
 
                         if (localWebcamStream !== null) {
                             video.srcObject = localWebcamStream;
+                            video.muted = true;
+                            video.volume = 0.0;
                             video.classList.add('selfie');
                             if (el.settingFlipWebcam.checked) {
                                 video.style.transform = 'rotateY(180deg)';
                             }
-                            prepareSoundReader(video.srcObject, user.id, audiometer);
                         }
                     } else {
                         if (user.id in remoteWebcamStream) {
@@ -1543,8 +1531,6 @@ onstart.push(() => {
             console.log("Setting stream to conversation");
             remoteWebcamStream[userid] = stream;
             ele.srcObject = stream;
-            //remoteWebcamStream[userid][0].onremovetrack = (track) => { ele.srcObject = null; };
-            //remoteWebcamStream[userid][0].getVideoTracks()[0].onended = () => { console.log("VIDEO ENDED") };
         } else {
             // Second stream from a user is livestream. But probably just static
             console.log("Setting stream to livestream");
@@ -1554,12 +1540,9 @@ onstart.push(() => {
                 ele2.srcObject = stream;
             }
         }
-        //if (ele && ele.srcObject) {
-        //    prepareSoundReader(ele.srcObject, userid, document.getElementById('meter-' + userid));
-        //}
     }
 
-    const prepareSoundReader = (src, uuid, meter) => {
+    const prepareSoundReader = (src, uuid) => {
         var sreader = new SoundReader(new AudioContext());
         sreader.connectToSource(src, function (e) {
             var timerID = setInterval(() => {
@@ -1581,6 +1564,7 @@ onstart.push(() => {
                 }
             }, 200);
         });
+        return sreader.dest;
     }
 
     const cleanupStream = (userid) => {
@@ -1656,6 +1640,7 @@ onstart.push(() => {
                     ele.srcObject = stream;
                 }
                 localWebcamStream = stream;
+                localFilteredWebcamStream = prepareSoundReader(localWebcamStream, iam).stream;
                 updateDeviceState();
 
                 // Any existing PC need the stream
@@ -1682,42 +1667,40 @@ onstart.push(() => {
 
     const replacePeerMedia = (pc) => {
         var senders = pc.getSenders().length;
-        if (senders === 3) {
-            if (localWebcamStream) {
-                if (localWebcamStream.getVideoTracks().length > 0) {
-                    pc.getSenders()[0].replaceTrack(localWebcamStream.getVideoTracks()[0]);
-                } else {
-                    var whiteNoiseStream = whiteNoise();
-                    pc.getSenders()[0].replaceTrack(whiteNoiseStream.getTracks()[0]);
-                }
 
-                pc.getSenders()[1].replaceTrack(localWebcamStream.getAudioTracks()[0]);
-            }
-            if (localLiveStream) {
-                pc.getSenders()[2].replaceTrack(localLiveStream.getVideoTracks()[0]);
-            }
+        var tracks = [];
+        if (!localWebcamStream) {
+            return;
+        }
+        if (localWebcamStream.getVideoTracks().length == 1) {
+            tracks.push(localWebcamStream.getVideoTracks()[0]);
+        } else {
+            var whiteNoiseStream = whiteNoise();
+            tracks.push(whiteNoiseStream.getTracks()[0]);
+        }
+        if (detectTalking) {
+            tracks.push(localFilteredWebcamStream.getAudioTracks()[0]);
+        } else {
+            tracks.push(localWebcamStream.getAudioTracks()[0]);
+        }
+        if (localLiveStream) {
+            tracks.push(localLiveStream.getVideoTracks()[0]);
+        } else {
+            var whiteNoiseStream = whiteNoise();
+            tracks.push(whiteNoiseStream.getTracks()[0]);
+        }
+
+        if (senders === 3) {
+            pc.getSenders()[0].replaceTrack(tracks[0]);
+            pc.getSenders()[1].replaceTrack(tracks[1]);
+            pc.getSenders()[2].replaceTrack(tracks[2]);
         } else if (senders == 0) {
-            if (localWebcamStream) {
-                if (localWebcamStream.getVideoTracks().length > 0) {
-                    pc.addTrack(localWebcamStream.getVideoTracks()[0], localWebcamStream);
-                } else {
-                    var whiteNoiseStream = whiteNoise();
-                    pc.addTrack(whiteNoiseStream.getTracks()[0]);
-                }
-                pc.addTrack(localWebcamStream.getAudioTracks()[0], localWebcamStream);
-            } else {
-                console.log("Damnit Craig");
-            }
-            if (localLiveStream) {
-                pc.addTrack(localLiveStream.getVideoTracks()[0], localLiveStream);
-            } else {
-                var whiteNoiseStream = whiteNoise();
-                console.log(whiteNoiseStream);
-                pc.addTrack(whiteNoiseStream.getTracks()[0], whiteNoiseStream);
-            }
+            pc.addTrack(tracks[0]);
+            pc.addTrack(tracks[1]);
+            pc.addTrack(tracks[2]);
         } else {
             console.log("SENDERS " + senders);
-            throw new Error("Peer connection has wrong number of senders!");
+            throw new Error("Peer connection has wrong number of senders! (" + senders + ")");
         }
 
         console.log(pc);
