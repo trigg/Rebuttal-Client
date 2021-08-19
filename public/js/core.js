@@ -41,7 +41,7 @@ var customPassword = null;
 var overlayEnable = true;
 var noWebcamFound = false;
 var sfxVolume = 0.5;
-var detectTalking = false;
+var detectTalking = true;
 // Browser storage
 
 var theme = null;

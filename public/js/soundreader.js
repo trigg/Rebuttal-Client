@@ -24,6 +24,10 @@ function SoundReader(context) {
             for (var i = 0; i < output.length; i++) {
                 output[i] = input[i];
             }
+        } else {
+            for (var i = 0; i < output.length; i++) {
+                output[i] = 0;
+            }
         }
         ref.talked = talked;
         ref.peak = peak;
