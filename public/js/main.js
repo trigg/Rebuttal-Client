@@ -903,14 +903,15 @@ onstart.push(() => {
             }
 
             room.userlist.forEach((user) => {
-
+                var user = getUserByID(user.id);
                 // Create a Video element for voice chat
                 var divid = div({ className: 'videodiv', id: 'videodiv-' + user.id });
                 var video = document.createElement('video');
+                video.setAttribute('poster', user.avatar);
                 video.setAttribute('autoPlay', true);
                 video.setAttribute('playsInline', true);
                 video.setAttribute('id', 'video-' + user.id);
-                video.setAttribute('volume', getConfig('volume' - +user.id, 1.0));
+                video.setAttribute('volume', getConfig('volume-' + user.id, 1.0));
 
                 var audiometer = document.createElement('meter');
                 audiometer.high = 0.15;
@@ -973,17 +974,18 @@ onstart.push(() => {
             contents.appendChild(voiceDiv);
         } else if (room.type === 'text') {
             if (voiceroom) {
-                // TODO Elements for each user we are connected to, to avoid losing sound
                 var videoOverlayDiv = div({ className: 'chatWebcamOverlay', id: 'chatWebcamOverlay' })
                 voiceroom.userlist.forEach((user) => {
-
+                    // User info isn't complete, use cached
+                    var user = getUserByID(user.id);
                     // Create a Video element for voice chat
                     var divid = div({ className: 'videodiv', id: 'videodiv-' + user.id });
                     var video = document.createElement('video');
+                    video.setAttribute('poster', user.avatar);
                     video.setAttribute('autoPlay', true);
                     video.setAttribute('playsInline', true);
                     video.setAttribute('id', 'video-' + user.id);
-                    video.setAttribute('volume', getConfig('volume' - +user.id, 1.0));
+                    video.setAttribute('volume', getConfig('volume-' + user.id, 1.0));
 
                     var audiometer = document.createElement('meter');
                     audiometer.high = 0.15;

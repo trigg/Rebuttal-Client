@@ -28,6 +28,12 @@
     flex-direction: row;
 
 }
+.chatWebcamOverlay {
+    position: absolute;
+}
+.chatWebcamOverlay .videodiv{
+    position: relative;
+}
 .videodiv, .livediv{
     width:444px;
     height:250px;
