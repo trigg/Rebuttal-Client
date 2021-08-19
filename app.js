@@ -107,20 +107,18 @@ function prepareOverlay() {
         console.log("Overlay is not yet supported on this platform");
     }
     ipcMain.on('connectToServer', function (e, a) {
-        var lastwin = win;
         var pass = null;
         if (a.user) {
             keytar.getPassword('Rebuttal-' + a.host, a.user).then(
                 pass => {
-                    createWindow(a.host, a.user, pass);
-                    lastwin.close();
+                    startApp(a.host, a.user, pass);
                 }).catch(err => {
                     console.log(err);
                 });
 
             return;
         }
-        createWindow(a.host, null, null);
+        startApp(a.host, null, null);
         lastwin.close();
     });
     ipcMain.on('savepassword', function (e, a) {
@@ -143,18 +141,11 @@ function prepareOverlay() {
     });
 }
 
-function createWindow(url, username, password) {
-    win = new BrowserWindow({
-        width: 600,
-        height: 400,
-        webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
-            nodeIntegration: false,
-            contextIsolation: true,
-        }
-    })
+function startApp(url, username, password) {
+    if (!win) {
+        createWindow();
+    }
     win.loadFile('public/index.html');
-
     win.once('ready-to-show', () => {
         if (password) {
             win.webContents.executeJavaScript('customUsername="' + username + '"; customPassword="' + password + '"')
@@ -165,18 +156,25 @@ function createWindow(url, username, password) {
     });
 }
 
+function createWindow() {
+    win = new BrowserWindow({
+        width: 600,
+        height: 400,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            nodeIntegration: false,
+            contextIsolation: true,
+        }
+    })
+}
+
 app.whenReady().then(() => {
     if (!url) {
         createServerBrowser();
     } else {
-        createWindow(url, null);
+        startApp(url, null, null);
     }
     prepareOverlay();
-    //app.on('activate', () => {
-    //    if (BrowserWindow.getAllWindows().length === 0) {
-    //        createWindow();
-    //    }
-    //})
 }).catch(err => {
     console.log(err);
 });
