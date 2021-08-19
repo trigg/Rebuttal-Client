@@ -153,6 +153,19 @@
                             <input type="range" min="16" max="128" value="24" class='slider' id='settingbitrate' />
                             <span id='settingbitrateoutput' data-postfix=' kHz'></span>
                         </div>
+                        <div>
+                            <input type='checkbox' id='settingVoiceTrigger' />
+                            <label for='settingVoiceTrigger'>Trigger microphone on by voice</label>
+                        </div>
+                        <div class='settingsvoicetriggervolume'>
+                            <label for='settingsvoicetriggervolume'>Sound Effect Volume</label>
+                            <input type='range' list='volumevoiceticks' id='settingsvoicetriggervolume' min='0' max='1'
+                                step='0.01'>
+                            <span id='settingsvoicetriggervolumeoutput' data-postfix=' '></span>
+                            <datalist id='volumevoiceticks'>
+                                <option value='0' label='0'></option>
+                            </datalist>
+                        </div>
 
                     </div>
 

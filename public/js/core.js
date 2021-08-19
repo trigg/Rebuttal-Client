@@ -42,6 +42,7 @@ var overlayEnable = true;
 var noWebcamFound = false;
 var sfxVolume = 0.5;
 var detectTalking = true;
+var detectTalkingLevel = 0.05;
 // Browser storage
 
 var theme = null;

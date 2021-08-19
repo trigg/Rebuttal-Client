@@ -15,7 +15,7 @@ function SoundReader(context) {
             if (Math.abs(input[i]) > peak) {
                 peak = Math.abs(input[i]);
             }
-            if (Math.abs(input[i]) > 0.05) { //TODO Custom activity level
+            if (Math.abs(input[i]) > detectTalkingLevel) {
                 talked = true;
                 break;
             }

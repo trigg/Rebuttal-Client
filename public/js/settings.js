@@ -256,12 +256,14 @@ onstart.push(() => {
 
     setupCheckbox('noisesupress', el.settingNoiseSupress, () => { startLocalDevices(); });
     setupCheckbox('echocancel', el.settingEchoCancellation, () => { startLocalDevices(); });
-    setupCheckbox('hidedupename', el.settingsappearancehidedupename, () => { populateRoom(); })
+    setupCheckbox('hidedupename', el.settingsappearancehidedupename, () => { populateRoom(); });
+    setupCheckbox('voicetrigger', el.settingVoiceTrigger, () => { detectTalking = el.settingVoiceTrigger.value });
 
     setupSlider('audiobitrate', 64, el.settingbitrate, el.settingbitrateoutput, () => { startLocalDevices(); });
     setupSlider('streamresolution', 1080, el.settingsstreamresolution, el.settingsstreamresolutionoutput, () => { if (localLiveStream) { startLocalDevices(); } });
     setupSlider('streamrate', 30, el.settingsstreamrate, el.settingsstreamrateoutput, () => { if (localLiveStream) { startLocalDevices(); } });
     setupSlider('sfxvolume', 50, el.settingssfxvolume, el.settingssfxvolumeoutput, () => { sfxVolume = el.settingssfxvolume.value / 100; setConfig('sfxvolume', el.settingssfxvolume.value / 100) })
+    setupSlider('voicetriggerlevel', 0.05, el.settingsvoicetriggervolume, el.settingsvoicetriggervolumeoutput, () => { detectTalkingLevel = el.settingsvoicetriggervolume.value });
 
     el.settingbutton.onclick = toggleSettings;
     el.settingsclose.onclick = toggleSettings;
