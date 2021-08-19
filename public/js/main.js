@@ -1649,6 +1649,7 @@ onstart.push(() => {
             })
             .then(updateInputsInSettings)
             .catch(err => {
+                console.info("No webcam appears to be present:");
                 console.error("error:" + err);
                 if (!noWebcamFound) {
                     noWebcamFound = true;
@@ -1667,26 +1668,27 @@ onstart.push(() => {
 
     const replacePeerMedia = (pc) => {
         var senders = pc.getSenders().length;
-
+        var sources = []
         var tracks = [];
         if (!localWebcamStream) {
             return;
         }
+        sources.push(localWebcamStream);
         if (localWebcamStream.getVideoTracks().length == 1) {
             tracks.push(localWebcamStream.getVideoTracks()[0]);
         } else {
             var whiteNoiseStream = whiteNoise();
             tracks.push(whiteNoiseStream.getTracks()[0]);
         }
-        if (detectTalking) {
-            tracks.push(localFilteredWebcamStream.getAudioTracks()[0]);
-        } else {
-            tracks.push(localWebcamStream.getAudioTracks()[0]);
-        }
+        tracks.push(localFilteredWebcamStream.getAudioTracks()[0]);
+
+
         if (localLiveStream) {
+            sources.push(localLiveStream);
             tracks.push(localLiveStream.getVideoTracks()[0]);
         } else {
             var whiteNoiseStream = whiteNoise();
+            sources.push(whiteNoiseStream);
             tracks.push(whiteNoiseStream.getTracks()[0]);
         }
 
@@ -1695,9 +1697,9 @@ onstart.push(() => {
             pc.getSenders()[1].replaceTrack(tracks[1]);
             pc.getSenders()[2].replaceTrack(tracks[2]);
         } else if (senders == 0) {
-            pc.addTrack(tracks[0]);
-            pc.addTrack(tracks[1]);
-            pc.addTrack(tracks[2]);
+            pc.addTrack(tracks[0], sources[0]);
+            pc.addTrack(tracks[1], sources[0]);
+            pc.addTrack(tracks[2], sources[1]);
         } else {
             console.log("SENDERS " + senders);
             throw new Error("Peer connection has wrong number of senders! (" + senders + ")");
