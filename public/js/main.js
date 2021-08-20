@@ -666,6 +666,7 @@ onstart.push(() => {
                             })
                         .catch(err => {
                             console.log(err);
+                            console.log(pc.getSenders());
                         })
                     break;
                 case "answer":
@@ -1520,8 +1521,9 @@ onstart.push(() => {
     }
 
     const handleIceStateChange = (userid, event) => {
+        console.log("ICE Connection state with " + userid + " : " + peerConnection[userid].iceConnectionState);
         if (peerConnection[userid].iceConnectionState === 'failed') {
-            restartStream(userid);
+            //restartStream(userid);
         } else if (peerConnection[userid].iceConnectionState == 'connected') {
             console.log("ICE Connected to " + userid);
         }
