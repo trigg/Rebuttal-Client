@@ -914,7 +914,7 @@ onstart.push(() => {
 
                 var novid = img({ src: 'webcamoff.svg', id: "novideo-" + user.id, className: "videonovideo", alt: 'has no video stream', title: "No video" });
                 var noaud = img({ src: 'micoff.svg', id: "noaudio-" + user.id, className: "videonoaudio", alt: 'has no audio stream', title: "No Audio" });
-                var nocon = img({ src: 'disconnected.svg', id: "noconn-" + user.id, className: "videonoconn", alt: 'not connected', title: "No Connection" });
+                var nocon = img({ src: 'noconnection.svg', id: "noconn-" + user.id, className: "videonoconn", alt: 'not connected', title: "No Connection" });
                 divid.appendChild(novid);
                 divid.appendChild(noaud);
                 divid.appendChild(nocon);
