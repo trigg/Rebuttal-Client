@@ -183,7 +183,6 @@ onstart.push(() => {
     }
 
     const closeContextMenu = () => {
-        console.log('Close menu');
         el.contextmenu.style.display = 'none';
     }
 
@@ -650,13 +649,6 @@ onstart.push(() => {
             }
             switch (payload.type) {
                 case "offer":
-                    console.log('Got offer from : ' + fromuserid);
-                    if (fromuserid in peerConnection) {
-
-                        console.log('Connection exists for new offer : ' + fromuserid);
-                        break;
-                    }
-
                     createPeerConnection(fromuserid);
                     if (peerConnection[fromuserid].signalingState != "stable") {
                         peerConnection[fromuserid].setLocalDescription({ type: "rollback" });
@@ -1494,11 +1486,9 @@ onstart.push(() => {
             pc.ontrack = (event) => { handleTrack(userid, event) };
             pc.oniceconnectionstatechange = (event) => { handleIceStateChange(userid, event) };
             pc.onconnectionstatechange = (_event) => {
-                console.log("Connection to " + userid + " became : " + pc.connectionState);
                 if (pc.connectionState === 'failed') {
                     restartStream(userid)
                 }
-
                 if (pc.connectionState === 'connected') {
                     var vc = document.getElementById("noconn-" + userid);
                     vc.style.display = 'none';
@@ -1524,7 +1514,6 @@ onstart.push(() => {
     }
 
     const handleIceStateChange = (userid, event) => {
-        console.log("ICE Connection state with " + userid + " : " + peerConnection[userid].iceConnectionState);
         if (peerConnection[userid].iceConnectionState === 'failed') {
             //restartStream(userid);
         } else if (peerConnection[userid].iceConnectionState == 'connected') {
@@ -1569,15 +1558,12 @@ onstart.push(() => {
 
         if (ele && ele.srcObject === null) {
             // First stream from a user is webcam/audio
-            console.log("Setting stream to conversation");
             remoteWebcamStream[userid] = stream;
             ele.srcObject = stream;
         } else {
             // Second stream from a user is livestream. But probably just static
-            console.log("Setting stream to livestream");
             remoteLiveStream[userid] = stream;
             if (ele2) {
-                console.log("Putting in livestream webcam");
                 ele2.srcObject = stream;
             }
         }
@@ -1640,18 +1626,6 @@ onstart.push(() => {
             return;
         }
         createPeerConnection(userid);
-        peerConnection[userid].createOffer((sD) => {
-            peerConnection[userid].setLocalDescription(sD);
-            console.log("Sending Offer");
-            send({
-                payload: sD,
-                type: 'video',
-                fromuserid: iam,
-                touserid: userid
-            });
-        }, (error) => {
-            console.log(error);
-        })
     }
     function whiteNoise() {
         var width = 50;
@@ -1736,17 +1710,12 @@ onstart.push(() => {
             sources.push(whiteNoiseStream);
             tracks.push(whiteNoiseStream.getTracks()[0]);
         }
-        pc.getSenders().forEach((sender) => {
-            console.log(sender);
-        })
 
         if (senders === 3) {
             pc.getSenders()[0].replaceTrack(tracks[0]);
             pc.getSenders()[1].replaceTrack(tracks[1]);
             pc.getSenders()[2].replaceTrack(tracks[2]);
         } else if (senders == 0) {
-            console.log(tracks);
-            console.log(sources);
             pc.addTrack(tracks[0], sources[0]);
             pc.addTrack(tracks[1], sources[0]);
             pc.addTrack(tracks[2], sources[1]);
@@ -1754,9 +1723,6 @@ onstart.push(() => {
             console.log("SENDERS " + senders);
             throw new Error("Peer connection has wrong number of senders! (" + senders + ")");
         }
-
-        console.log(pc);
-        console.log(pc.getSenders());
     }
 
     const toggleWebcam = () => {
