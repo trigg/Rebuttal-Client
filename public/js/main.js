@@ -1697,6 +1697,7 @@ onstart.push(() => {
             tracks.push(localWebcamStream.getVideoTracks()[0]);
         } else {
             var whiteNoiseStream = whiteNoise();
+            whiteNoiseStream.getTracks()[0].enabled = false;
             tracks.push(whiteNoiseStream.getTracks()[0]);
         }
         tracks.push(localFilteredWebcamStream.getAudioTracks()[0]);
