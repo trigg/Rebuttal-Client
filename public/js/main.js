@@ -1604,7 +1604,7 @@ onstart.push(() => {
     }
 
     const cleanupStream = (userid) => {
-        console.log("Removing peer data " + data.userid);
+        console.log("Removing peer data " + userid);
         var ele = document.getElementById('video-' + userid);
         if (peerConnection[userid]) {
             var pc = peerConnection[userid];
