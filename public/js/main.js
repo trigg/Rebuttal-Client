@@ -621,7 +621,7 @@ onstart.push(() => {
             }
             if (userid === iam) {
                 currentVoiceRoom = null;
-                peerConnection.forEach((pc) => {
+                Object.values(peerConnection).forEach((pc) => {
                     cleanupStream(pc.userid);
                 })
                 peerConnection = {};
@@ -1713,7 +1713,6 @@ onstart.push(() => {
             return;
         }
 
-
         sources.push(localWebcamStream);
         if (localWebcamStream.getVideoTracks().length == 1) {
             tracks.push(localWebcamStream.getVideoTracks()[0]);
@@ -1732,6 +1731,9 @@ onstart.push(() => {
             sources.push(whiteNoiseStream);
             tracks.push(whiteNoiseStream.getTracks()[0]);
         }
+        pc.getSenders().forEach((sender) => {
+            console.log(sender);
+        })
 
         if (senders === 3) {
             pc.getSenders()[0].replaceTrack(tracks[0]);
