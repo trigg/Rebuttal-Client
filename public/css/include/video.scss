@@ -88,3 +88,10 @@ video{
     width: $iconsize;
     filter: invert(27%) sepia(85%) saturate(7203%) hue-rotate(358deg) brightness(98%) contrast(127%);
 }
+.videonoconn{
+    position: absolute;
+    left:0px;
+    top: 0px;
+    height: $iconsize;
+    width: $iconsize;
+}

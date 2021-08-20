@@ -315,6 +315,14 @@ video {
   filter: invert(27%) sepia(85%) saturate(7203%) hue-rotate(358deg) brightness(98%) contrast(127%);
 }
 
+.videonoconn {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  height: 24px;
+  width: 24px;
+}
+
 .custom-select-wrapper {
   position: relative;
   user-select: none;

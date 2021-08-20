@@ -622,9 +622,13 @@ onstart.push(() => {
             }
             if (userid === iam) {
                 currentVoiceRoom = null;
+                peerConnection.forEach((pc) => {
+                    cleanupStream(pc.userid);
+                })
                 peerConnection = [];
                 remoteWebcamStream = [];
                 playSound('voiceleave');
+
 
             } else {
                 cleanupStream(userid);
@@ -915,8 +919,10 @@ onstart.push(() => {
 
                 var novid = img({ src: 'webcamoff.svg', id: "novideo-" + user.id, className: "videonovideo", alt: 'has no video stream', title: "No video" });
                 var noaud = img({ src: 'micoff.svg', id: "noaudio-" + user.id, className: "videonoaudio", alt: 'has no audio stream', title: "No Audio" });
+                var nocon = img({ src: 'disconnected.svg', id: "noconn-" + user.id, className: "videonoconn", alt: 'not connected', title: "No Connection" });
                 divid.appendChild(novid);
                 divid.appendChild(noaud);
+                divid.appendChild(nocon);
 
                 divid.appendChild(video);
                 voiceDiv.appendChild(divid);
@@ -943,7 +949,7 @@ onstart.push(() => {
                 // If Me
                 if (user.id === iam) {
                     video.muted = true;
-
+                    nocon.style.display = 'none';
                     if (localWebcamStream !== null) {
                         video.srcObject = localWebcamStream;
                         video.muted = true;
@@ -983,8 +989,10 @@ onstart.push(() => {
 
                     var novid = img({ src: 'webcamoff.svg', id: "novideo-" + user.id, className: "videonovideo", alt: 'has no video stream', title: "No video" });
                     var noaud = img({ src: 'micoff.svg', id: "noaudio-" + user.id, className: "videonoaudio", alt: 'has no audio stream', title: "No Audio" });
+                    var nocon = img({ src: 'disconnected.svg', id: "noconn-" + user.id, className: "videonoconn", alt: 'not connected', title: "No Connection" });
                     divid.appendChild(novid);
                     divid.appendChild(noaud);
+                    divid.appendChild(nocon);
 
                     divid.appendChild(video);
                     videoOverlayDiv.appendChild(divid);
@@ -1011,7 +1019,7 @@ onstart.push(() => {
                     // If Me
                     if (user.id === iam) {
                         video.muted = true;
-
+                        nocon.style.display = 'none';
                         if (localWebcamStream !== null) {
                             video.srcObject = localWebcamStream;
                             video.muted = true;
@@ -1477,17 +1485,45 @@ onstart.push(() => {
                     }
                 ]
             });
+            pc.userid = userid;
             replacePeerMedia(pc);
             pc.onicecandidate = (event) => { handleIceCandidate(userid, event) };
             pc.ontrack = (event) => { handleTrack(userid, event) };
             pc.oniceconnectionstatechange = (event) => { handleIceStateChange(userid, event) };
-            pc.onnegotiationneeded = async () => { console.log("RENEGOTIATE"); await pc.setLocalDescription(await pc.createOffer()); send({ type: 'video', touserid: userid, fromuserid: iam, payload: pc.localDescription }) }
+            pc.onconnectionstatechange = (_event) => {
+                console.log("Connection to " + userid + " became : " + pc.connectionState);
+                if (pc.connectionState === 'failed') {
+                    restartStream(userid)
+                }
+
+                if (pc.connectionState === 'connected') {
+                    var vc = document.getElementById("noconn-" + userid);
+                    vc.style.display = 'none';
+                } else {
+                    var vc = document.getElementById("noconn-" + userid);
+                    vc.style.display = 'block';
+                }
+
+            };
+            pc.onnegotiationneeded = async () => {
+                pc.createOffer().then((o) => {
+                    pc.setLocalDescription(o).then(() => {
+                        send({ type: 'video', touserid: userid, fromuserid: iam, payload: pc.localDescription })
+                    }).catch((err) => {
+                        console.log("Unable to set Local Description : " + err);
+                    });
+                }).catch((err) => {
+                    console.log("Unable to create offer : " + err);
+                });
+            }
         }
     }
 
     const handleIceStateChange = (userid, event) => {
         if (peerConnection[userid].iceConnectionState === 'failed') {
             restartStream(userid);
+        } else if (peerConnection[userid].iceConnectionState == 'connected') {
+            console.log("ICE Connected to " + userid);
         }
     };
 
@@ -1671,8 +1707,11 @@ onstart.push(() => {
         var sources = []
         var tracks = [];
         if (!localWebcamStream) {
+            console.log('Local Webcam Stream null : cannot replace peer media');
             return;
         }
+
+
         sources.push(localWebcamStream);
         if (localWebcamStream.getVideoTracks().length == 1) {
             tracks.push(localWebcamStream.getVideoTracks()[0]);
