@@ -1741,23 +1741,90 @@ onstart.push(() => {
             selectScreenShare();
         }
     }
+
+    showStreamingOptions = (sources) => {
+        console.log("STREAMING");
+        console.log(sources);
+        if (!sources) {
+            // TODO Hide when null
+            el.popupscreenshare.style.display = 'none';
+        } else {
+            el.popupscreenshare.style.display = 'flex';
+            el.popupscreenshare.innerText = '';
+            for (const source of sources) {
+                console.log(source);
+
+                var container = div({ className: 'appscreen' });
+                var text = document.createElement('nobr');
+                text.innerText = source.name;
+                container.appendChild(text);
+                if (source.icon) {
+                    var icon = document.createElement('img');
+                    icon.src = source.icon;
+                    icon.alt = 'Icon for ' + source.name;
+                    icon.classList.add('appicon');
+                    container.appendChild(icon);
+                }
+                if (source.thumbnail) {
+                    var thumb = document.createElement('img');
+                    thumb.src = source.thumbnail;
+                    thumb.alt = 'Thumbnail for ' + source.name;
+                    container.appendChild(thumb);
+                }
+
+                container.onclick = () => {
+                    showStreamingOptions(null);
+                    navigator.mediaDevices
+                        .getUserMedia({
+                            video: {
+                                mandatory: {
+                                    maxHeight: getConfig('streamresolution', 1080),
+                                    minHeight: getConfig('streamresolution', 1080),
+                                    chromeMediaSource: 'desktop',
+                                    chromeMediaSourceId: source.id
+                                }
+                            },
+                            audio: false
+                        })
+                        .then(stream => {
+                            localLiveStream = stream;
+                            console.log("Started Streaming window : " + stream.getVideoTracks()[0].label);
+                            console.log(stream);
+                            console.log(stream.getTracks())
+                            replaceAllPeerMedia();
+                            send({ type: 'golive', livestate: true, livelabel: stream.getTracks()[0].label });
+                            isScreenShare = true;
+                        })
+                        .catch(err => {
+                            console.error("error:", err);
+                        });
+                }
+
+                el.popupscreenshare.appendChild(container);
+            }
+        }
+    }
+
     const selectScreenShare = () => {
         // TODO In-app choice of windows?
-
-        navigator.mediaDevices
-            .getDisplayMedia(createScreenConstraints())
-            .then(stream => {
-                localLiveStream = stream;
-                console.log("Started Streaming window : " + stream.getVideoTracks()[0].label);
-                console.log(stream);
-                console.log(stream.getTracks())
-                replaceAllPeerMedia();
-                send({ type: 'golive', livestate: true, livelabel: stream.getTracks()[0].label });
-                isScreenShare = true;
-            })
-            .catch(err => {
-                console.error("error:", err);
-            });
+        if (electronMode) {
+            window.ipc.send('screenshare', []);
+        } else {
+            navigator.mediaDevices
+                .getDisplayMedia(createScreenConstraints())
+                .then(stream => {
+                    localLiveStream = stream;
+                    console.log("Started Streaming window : " + stream.getVideoTracks()[0].label);
+                    console.log(stream);
+                    console.log(stream.getTracks())
+                    replaceAllPeerMedia();
+                    send({ type: 'golive', livestate: true, livelabel: stream.getTracks()[0].label });
+                    isScreenShare = true;
+                })
+                .catch(err => {
+                    console.error("error:", err);
+                });
+        }
     };
     const toggleMuted = () => {
         isMute = !isMute

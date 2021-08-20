@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, desktopCapturer } = require('electron');
 const path = require("path")
 const keytar = require('keytar');
 var url = app.commandLine.getSwitchValue('url');
@@ -17,8 +17,6 @@ if (process.env.XDG_SESSION_TYPE) {
             break;
     }
 }
-
-
 
 var overlay;
 var win;
@@ -48,15 +46,9 @@ function createOverlay() {
 }
 
 function createServerBrowser() {
-    win = new BrowserWindow({
-        width: 600,
-        height: 400,
-        webPreferences: {
-            preload: path.join(__dirname, 'client', 'preload-browser.js'),
-            nodeIntegration: false,
-            contextIsolation: true,
-        }
-    })
+    if (!win) {
+        createWindow();
+    }
     win.loadFile('client/browser.html');
 
     win.once('ready-to-show', () => {
@@ -107,7 +99,6 @@ function prepareOverlay() {
         console.log("Overlay is not yet supported on this platform");
     }
     ipcMain.on('connectToServer', function (e, a) {
-        var pass = null;
         if (a.user) {
             keytar.getPassword('Rebuttal-' + a.host, a.user).then(
                 pass => {
@@ -123,6 +114,27 @@ function prepareOverlay() {
     });
     ipcMain.on('savepassword', function (e, a) {
         keytar.setPassword('Rebuttal-' + a.server, a.email, a.password);
+    });
+    ipcMain.on('screenshare', function (e, a) {
+        desktopCapturer.getSources({
+            types: ['window', 'screen'],
+            fetchWindowIcons: true
+        }).then(async sources => {
+            var a = [];
+            Object.values(sources).forEach((source) => {
+                var b = {};
+                b.name = source.name;
+                if (source.thumbnail) {
+                    b.thumbnail = source.thumbnail.toDataURL();
+                }
+                if (source.appIcon && source.appIcon.getSize().width > 0) {
+                    b.icon = source.appIcon.toDataURL();
+                }
+                b.id = source.id;
+                a.push(b);
+            });
+            win.webContents.send("screenshare", a);
+        })
     });
     ipcMain.on('getServerAccounts', function (e, a) {
         console.log("Getting account for : " + a);
@@ -161,7 +173,7 @@ function createWindow() {
         width: 600,
         height: 400,
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
+            preload: path.join(__dirname, 'client', 'preload-browser.js'),
             nodeIntegration: false,
             contextIsolation: true,
         }

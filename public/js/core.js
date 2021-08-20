@@ -86,6 +86,7 @@ var send;
 var connect;
 var populateRoom;
 var playSound;
+var showStreamingOptions;
 
 
 getUserByID = (id) => {
@@ -108,6 +109,11 @@ getUsersByPartialName = (nameFrag) => {
     });
     return ret;
 }
-console.log("Electron: " + ('electron' in window));
 
 electronMode = /electron/i.test(navigator.userAgent)
+console.log("Electron: " + electronMode);
+
+
+//if (electronMode) {
+window.ipc.recv('screenshare', (a, e) => { console.log("RECV RECVD"); showStreamingOptions(a) });
+//}

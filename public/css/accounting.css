@@ -149,7 +149,7 @@ code {
   width: 24px;
 }
 
-.popupsettings, .popupserver, .popupinvite, .popupcustomouter {
+.popupsettings, .popupserver, .popupinvite, .popupcustomouter, .popupscreenshare {
   display: none;
   position: relative;
   z-index: 1;
@@ -211,6 +211,23 @@ code {
   right: -9px;
   color: red;
   font-size: 30px;
+}
+
+.appicon {
+  width: 48px;
+  height: 48px;
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+}
+
+.appscreen {
+  width: 150px;
+  height: 170px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .appLiveRoom {
