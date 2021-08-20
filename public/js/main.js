@@ -551,7 +551,6 @@ onstart.push(() => {
             console.log(data.message);
         },
         "disconnect": (data) => {
-            console.log("Removing peer data " + data.userid);
             cleanupStream(data.userid);
         },
         "login": (data) => {
@@ -625,8 +624,8 @@ onstart.push(() => {
                 peerConnection.forEach((pc) => {
                     cleanupStream(pc.userid);
                 })
-                peerConnection = [];
-                remoteWebcamStream = [];
+                peerConnection = {};
+                remoteWebcamStream = {};
                 playSound('voiceleave');
 
 
@@ -1511,6 +1510,7 @@ onstart.push(() => {
                         send({ type: 'video', touserid: userid, fromuserid: iam, payload: pc.localDescription })
                     }).catch((err) => {
                         console.log("Unable to set Local Description : " + err);
+                        console.log(o);
                     });
                 }).catch((err) => {
                     console.log("Unable to create offer : " + err);
@@ -1604,6 +1604,7 @@ onstart.push(() => {
     }
 
     const cleanupStream = (userid) => {
+        console.log("Removing peer data " + data.userid);
         var ele = document.getElementById('video-' + userid);
         if (peerConnection[userid]) {
             var pc = peerConnection[userid];
@@ -1616,6 +1617,7 @@ onstart.push(() => {
         }
         if (ele && ele.srcObject) {
             ele.srcObject.getTracks().forEach(track => track.stop());
+            ele.srcObject = null;
         }
 
         delete peerConnection[userid];
