@@ -650,9 +650,10 @@ onstart.push(() => {
             }
             switch (payload.type) {
                 case "offer":
+                    console.log('Got offer from : ' + fromuserid);
                     if (fromuserid in peerConnection) {
 
-                        console.err('Connection exists for new offer : ' + fromuserid);
+                        console.log('Connection exists for new offer : ' + fromuserid);
                         break;
                     }
 
