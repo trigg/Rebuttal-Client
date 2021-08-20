@@ -1742,6 +1742,8 @@ onstart.push(() => {
             pc.getSenders()[1].replaceTrack(tracks[1]);
             pc.getSenders()[2].replaceTrack(tracks[2]);
         } else if (senders == 0) {
+            console.log(tracks);
+            console.log(sources);
             pc.addTrack(tracks[0], sources[0]);
             pc.addTrack(tracks[1], sources[0]);
             pc.addTrack(tracks[2], sources[1]);
