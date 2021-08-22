@@ -625,11 +625,13 @@ onstart.push(() => {
                 })
                 peerConnection = {};
                 remoteWebcamStream = {};
+                amWatching = {};
+                isWatching = {};
                 playSound('voiceleave');
-
-
             } else {
                 cleanupStream(userid);
+                amWatching[userid] = false;
+                isWatching[userid] = false;
             }
         },
         "groupplay": (data) => {
@@ -757,6 +759,9 @@ onstart.push(() => {
             if (user) {
                 user.livestate = livestate;
                 user.livelabel = livelabel;
+            }
+            if (!livestate) {
+                amIWatching[userid] = false;
             }
             if (roomid === currentVoiceRoom) {
                 // TODO Play sound for stream start or finish
@@ -947,7 +952,7 @@ onstart.push(() => {
                 voiceDiv.appendChild(divid);
                 if (user.livestate) {
                     var livediv = div({ className: 'livediv' });
-                    if (isUserWatching(user.id)) {
+                    if (amIWatching(user.id)) {
                         var livevideo = document.createElement('video');
                         livevideo.setAttribute('autoPlay', true);
                         livevideo.setAttribute('playsInline', true);
@@ -972,6 +977,11 @@ onstart.push(() => {
                         livediv.appendChild(span1);
                         livediv.appendChild(span2);
                         livediv.appendChild(span3);
+
+                        livediv.onclick = () => {
+                            send({ type: 'golive', livestate: true, livelabel: stream.getTracks()[0].label });
+                            amIWatching[user.id] = true;
+                        }
                     }
                     liveDiv.appendChild(livediv);
                     count++;
@@ -1029,21 +1039,38 @@ onstart.push(() => {
                     videoOverlayDiv.appendChild(divid);
                     if (user.livestate) {
                         var livediv = div({ className: 'livediv' });
-                        var livevideo = document.createElement('video');
-                        livevideo.setAttribute('autoPlay', true);
-                        livevideo.setAttribute('playsInline', true);
-                        livevideo.setAttribute('id', 'live-' + user.id);
-                        if (user.id === iam) {
-                            if (localLiveStream !== null) {
-                                livevideo.srcObject = localLiveStream;
+                        if (amIWatching(user.id)) {
+                            var livevideo = document.createElement('video');
+                            livevideo.setAttribute('autoPlay', true);
+                            livevideo.setAttribute('playsInline', true);
+                            livevideo.setAttribute('id', 'live-' + user.id);
+                            if (user.id === iam) {
+                                if (localLiveStream !== null) {
+                                    livevideo.srcObject = localLiveStream;
+                                }
+                            } else {
+                                if (user.id in remoteLiveStream) {
+                                    livevideo.srcObject = remoteLiveStream[user.id];
+                                }
                             }
+                            livediv.appendChild(livevideo);
                         } else {
-                            if (user.id in remoteLiveStream) {
-                                livevideo.srcObject = remoteLiveStream[user.id];
+                            var span1 = document.createElement('span');
+                            var span2 = document.createElement('span');
+                            var span3 = document.createElement('span');
+                            span1.innerText = user.name;
+                            span2.innerText = 'is streaming';
+                            span3.innerText = user.livelabel;
+                            livediv.appendChild(span1);
+                            livediv.appendChild(span2);
+                            livediv.appendChild(span3);
+
+                            livediv.onclick = () => {
+                                send({ type: 'golive', livestate: true, livelabel: stream.getTracks()[0].label });
+                                amIWatching[user.id] = true;
                             }
                         }
-                        livediv.appendChild(livevideo);
-                        videoOverlayDiv.appendChild(livediv);
+                        liveDiv.appendChild(livediv);
                         count++;
                     }
 
@@ -1739,7 +1766,7 @@ onstart.push(() => {
         tracks.push(localFilteredWebcamStream.getAudioTracks()[0]);
 
 
-        if (localLiveStream && isUserWatching(pc.userid)) {
+        if (localLiveStream && isUserWatchingMe(pc.userid)) {
             sources.push(localLiveStream);
             tracks.push(localLiveStream.getVideoTracks()[0]);
         } else {
@@ -1778,8 +1805,12 @@ onstart.push(() => {
         }
     }
 
-    const isUserWatching = (uuid) => {
+    const isUserWatchingMe = (uuid) => {
         return (uuid in isWatching && isWatching[uuid]);
+    }
+
+    const amIWatching = (uuid) => {
+        return (uuid in amWatching && amWatching[uuid]);
     }
 
     showStreamingOptions = (sources) => {

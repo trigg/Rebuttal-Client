@@ -19,6 +19,7 @@ var remoteWebcamStream = {};
 var remoteLiveStream = {};
 var peerConnection = {};
 var isWatching = {};
+var amWatching = {};
 var el = {};
 var isWebcam = false;
 var isScreenShare = false;
