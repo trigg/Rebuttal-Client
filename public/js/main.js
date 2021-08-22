@@ -756,6 +756,7 @@ onstart.push(() => {
         'golive': (data) => {
             var { livestate, livelabel, userid, roomid } = data;
             var user = getUserByID(userid);
+            console.log(data);
             if (user) {
                 user.livestate = livestate;
                 user.livelabel = livelabel;
@@ -979,8 +980,9 @@ onstart.push(() => {
                         livediv.appendChild(span3);
 
                         livediv.onclick = () => {
-                            send({ type: 'golive', livestate: true, livelabel: stream.getTracks()[0].label });
-                            amIWatching[user.id] = true;
+                            send({ type: 'letmesee', touserid: user.id, fromuserid: iam, message: true });
+                            amWatching[user.id] = true;
+                            populateRoom();
                         }
                     }
                     liveDiv.appendChild(livediv);
@@ -1066,8 +1068,9 @@ onstart.push(() => {
                             livediv.appendChild(span3);
 
                             livediv.onclick = () => {
-                                send({ type: 'golive', livestate: true, livelabel: stream.getTracks()[0].label });
-                                amIWatching[user.id] = true;
+                                send({ type: 'letmesee', touserid: user.id, fromuserid: iam, message: true });
+                                amWatching[user.id] = true;
+                                populateRoom();
                             }
                         }
                         liveDiv.appendChild(livediv);
