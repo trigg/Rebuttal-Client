@@ -701,11 +701,15 @@ onstart.push(() => {
         },
         'invite': (data) => {
             var { url } = data;
-            var link = new URL('/?' + url, document.baseURI).href;
-            el.inviteuserreply.innerText = link;
+            el.inviteuserreply.innerText = url;
             el.onclick = () => {
                 navigator.clipboard.writeText(link).then(() => { }, () => { });
             }
+            new QRCode(el.inviteqrcode, {
+                text: url,
+                colorDark: "#000000",
+                colorLight: "#FFFFFF"
+            });
         },
         'sendMessage': (data) => {
             var { roomid, message } = data;
@@ -746,6 +750,26 @@ onstart.push(() => {
                 if (videouser) { videouser.classList.remove('videodivtalking'); }
                 if (electronMode) { window.ipc.send('talkstop', userid); }
             }
+        },
+        'golive': (data) => {
+            var { livestate, livelabel, userid, roomid } = data;
+            var user = getUserByID(userid);
+            if (user) {
+                user.livestate = livestate;
+                user.livelabel = livelabel;
+            }
+            if (roomid === currentVoiceRoom) {
+                // TODO Play sound for stream start or finish
+            }
+
+            populateRoom();
+        },
+        'letmesee': (data) => {
+            var { touserid, fromuserid, message } = data;
+            if (touserid == iam) {
+                isWatching[fromuserid] = message;
+            }
+            populateRoom();
         }
     }
 
@@ -923,20 +947,24 @@ onstart.push(() => {
                 voiceDiv.appendChild(divid);
                 if (user.livestate) {
                     var livediv = div({ className: 'livediv' });
-                    var livevideo = document.createElement('video');
-                    livevideo.setAttribute('autoPlay', true);
-                    livevideo.setAttribute('playsInline', true);
-                    livevideo.setAttribute('id', 'live-' + user.id);
-                    if (user.id === iam) {
-                        if (localLiveStream !== null) {
-                            livevideo.srcObject = localLiveStream;
+                    if (isUserWatching(user.id)) {
+                        var livevideo = document.createElement('video');
+                        livevideo.setAttribute('autoPlay', true);
+                        livevideo.setAttribute('playsInline', true);
+                        livevideo.setAttribute('id', 'live-' + user.id);
+                        if (user.id === iam) {
+                            if (localLiveStream !== null) {
+                                livevideo.srcObject = localLiveStream;
+                            }
+                        } else {
+                            if (user.id in remoteLiveStream) {
+                                livevideo.srcObject = remoteLiveStream[user.id];
+                            }
                         }
+                        livediv.appendChild(livevideo);
                     } else {
-                        if (user.id in remoteLiveStream) {
-                            livevideo.srcObject = remoteLiveStream[user.id];
-                        }
+                        livediv.innerHtml = user.name + "<br />is streaming<br />" + user.livelabel;
                     }
-                    livediv.appendChild(livevideo);
                     liveDiv.appendChild(livediv);
                     count++;
                 }
@@ -1703,7 +1731,7 @@ onstart.push(() => {
         tracks.push(localFilteredWebcamStream.getAudioTracks()[0]);
 
 
-        if (localLiveStream) {
+        if (localLiveStream && isUserWatching(pc.userid)) {
             sources.push(localLiveStream);
             tracks.push(localLiveStream.getVideoTracks()[0]);
         } else {
@@ -1740,6 +1768,10 @@ onstart.push(() => {
         } else {
             selectScreenShare();
         }
+    }
+
+    const isUserWatching = (uuid) => {
+        return (uuid in isWatching && isWatching[uuid]);
     }
 
     showStreamingOptions = (sources) => {

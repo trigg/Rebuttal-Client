@@ -18,6 +18,7 @@ var localLiveStream = null;
 var remoteWebcamStream = {};
 var remoteLiveStream = {};
 var peerConnection = {};
+var isWatching = {};
 var el = {};
 var isWebcam = false;
 var isScreenShare = false;
