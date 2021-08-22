@@ -1285,6 +1285,35 @@ onstart.push(() => {
                         livevideo.srcObject = remoteLiveStream[user.id];
                     }
                 }
+
+                livediv.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    var list = [];
+
+                    list.push(
+                        {
+                            text: 'Stop watching',
+                            callback: () => {
+                                console.log("Stop watching " + user.id);
+                                amWatching[user.id] = false;
+                                send({ type: 'letmesee', touserid: user.id, fromuserid: iam, message: false });
+                                populateRoom();
+                            },
+                            class: 'contextstopstream'
+                        });
+                    list.push(
+                        {
+                            text: 'Fullscreen',
+                            callback: () => {
+                                goFullscreen(livevideo, livediv);
+                            },
+                            class: 'contextfullscreen'
+                        }
+                    )
+                    showContextMenu(list, mouseX(e), mouseY(e));
+                }
+
+
                 livediv.appendChild(livevideo);
             } else {
                 var span1 = document.createElement('span');
@@ -1296,6 +1325,24 @@ onstart.push(() => {
                 livediv.appendChild(span1);
                 livediv.appendChild(span2);
                 livediv.appendChild(span3);
+
+                livediv.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    var list = [];
+
+                    list.push(
+                        {
+                            text: 'Watch',
+                            callback: () => {
+                                console.log('Start watching ' + user.id);
+                                send({ type: 'letmesee', touserid: user.id, fromuserid: iam, message: true });
+                                amWatching[user.id] = true;
+                                populateRoom();
+                            },
+                            class: 'contextstartstream'
+                        });
+                    showContextMenu(list, mouseX(e), mouseY(e));
+                }
 
                 livediv.onclick = () => {
                     console.log('Start watching ' + user.id);
@@ -1327,8 +1374,15 @@ onstart.push(() => {
                 startCall(user.id);
             }
         }
+    }
 
-
+    const goFullscreen = (element, parent) => {
+        el.fullscreenpopup.style.display = 'flex';
+        el.fullscreenpopup.appendChild(element);
+        el.fullscreenpopup.onclick = () => {
+            parent.appendChild(element);
+            el.fullscreenpopup.style.display = 'none';
+        }
     }
 
     const autoComplete = () => {

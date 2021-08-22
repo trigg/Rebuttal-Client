@@ -101,3 +101,14 @@ video{
     height: $iconsize;
     width: $iconsize;
 }
+
+.fullscreenpopup{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    z-index: 2;
+    background: #000c;
+}
