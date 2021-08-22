@@ -551,6 +551,8 @@ onstart.push(() => {
         },
         "disconnect": (data) => {
             cleanupStream(data.userid);
+            amWatching[data.userid] = false;
+
         },
         "login": (data) => {
             const { success, userid } = data;
@@ -775,6 +777,7 @@ onstart.push(() => {
             if (touserid == iam) {
                 isWatching[fromuserid] = message;
             }
+            replacePeerMedia(peerConnection[fromuserid]);
             populateRoom();
         }
     }
@@ -904,7 +907,6 @@ onstart.push(() => {
             var liveDiv = div({ className: 'appLiveRoom' });
             var voiceDiv = div({ className: 'appVoiceRoom' });
             contents.className = 'appContainer';
-            var count = 0;
             if (sharedVideo) {
                 var divcont = div({ className: 'videodiv', id: 'sharedVideoDiv' });
                 var video = document.getElementById('sharedVideo');
@@ -932,172 +934,15 @@ onstart.push(() => {
             }
 
             room.userlist.forEach((user) => {
-                var user = getUserByID(user.id);
-                // Create a Video element for voice chat
-                var divid = div({ className: 'videodiv', id: 'videodiv-' + user.id });
-                var video = document.createElement('video');
-                video.setAttribute('poster', user.avatar);
-                video.setAttribute('autoPlay', true);
-                video.setAttribute('playsInline', true);
-                video.setAttribute('id', 'video-' + user.id);
-                video.setAttribute('volume', getConfig('volume-' + user.id, 1.0));
-
-                var novid = img({ src: 'webcamoff.svg', id: "novideo-" + user.id, className: "videonovideo", alt: 'has no video stream', title: "No video" });
-                var noaud = img({ src: 'micoff.svg', id: "noaudio-" + user.id, className: "videonoaudio", alt: 'has no audio stream', title: "No Audio" });
-                var nocon = img({ src: 'noconnection.svg', id: "noconn-" + user.id, className: "videonoconn", alt: 'not connected', title: "No Connection" });
-                divid.appendChild(novid);
-                divid.appendChild(noaud);
-                divid.appendChild(nocon);
-
-                divid.appendChild(video);
-                voiceDiv.appendChild(divid);
-                if (user.livestate) {
-                    var livediv = div({ className: 'livediv' });
-                    if (amIWatching(user.id)) {
-                        var livevideo = document.createElement('video');
-                        livevideo.setAttribute('autoPlay', true);
-                        livevideo.setAttribute('playsInline', true);
-                        livevideo.setAttribute('id', 'live-' + user.id);
-                        if (user.id === iam) {
-                            if (localLiveStream !== null) {
-                                livevideo.srcObject = localLiveStream;
-                            }
-                        } else {
-                            if (user.id in remoteLiveStream) {
-                                livevideo.srcObject = remoteLiveStream[user.id];
-                            }
-                        }
-                        livediv.appendChild(livevideo);
-                    } else {
-                        var span1 = document.createElement('span');
-                        var span2 = document.createElement('span');
-                        var span3 = document.createElement('span');
-                        span1.innerText = user.name;
-                        span2.innerText = 'is streaming';
-                        span3.innerText = user.livelabel;
-                        livediv.appendChild(span1);
-                        livediv.appendChild(span2);
-                        livediv.appendChild(span3);
-
-                        livediv.onclick = () => {
-                            send({ type: 'letmesee', touserid: user.id, fromuserid: iam, message: true });
-                            amWatching[user.id] = true;
-                            populateRoom();
-                        }
-                    }
-                    liveDiv.appendChild(livediv);
-                    count++;
-                }
-
-                // If Me
-                if (user.id === iam) {
-                    video.muted = true;
-                    nocon.style.display = 'none';
-                    if (localWebcamStream !== null) {
-                        video.srcObject = localWebcamStream;
-                        video.muted = true;
-                        video.volume = 0.0;
-                        video.classList.add('selfie');
-                        if (el.settingFlipWebcam.checked) {
-                            video.style.transform = 'rotateY(180deg)';
-                        }
-                    }
-                } else {
-                    if (user.id in remoteWebcamStream) {
-                        video.srcObject = remoteWebcamStream[user.id];
-                    } else {
-                        startCall(user.id);
-                    }
-                }
-
+                populateRoomVideo(voiceDiv, liveDiv, user);
             });
-            if (count > 0) {
-                contents.appendChild(liveDiv);
-            }
+            contents.appendChild(liveDiv);
             contents.appendChild(voiceDiv);
         } else if (room.type === 'text') {
             if (voiceroom) {
                 var videoOverlayDiv = div({ className: 'chatWebcamOverlay', id: 'chatWebcamOverlay' })
                 voiceroom.userlist.forEach((user) => {
-                    // User info isn't complete, use cached
-                    var user = getUserByID(user.id);
-                    // Create a Video element for voice chat
-                    var divid = div({ className: 'videodiv', id: 'videodiv-' + user.id });
-                    var video = document.createElement('video');
-                    video.setAttribute('poster', user.avatar);
-                    video.setAttribute('autoPlay', true);
-                    video.setAttribute('playsInline', true);
-                    video.setAttribute('id', 'video-' + user.id);
-                    video.setAttribute('volume', getConfig('volume-' + user.id, 1.0));
-
-                    var novid = img({ src: 'webcamoff.svg', id: "novideo-" + user.id, className: "videonovideo", alt: 'has no video stream', title: "No video" });
-                    var noaud = img({ src: 'micoff.svg', id: "noaudio-" + user.id, className: "videonoaudio", alt: 'has no audio stream', title: "No Audio" });
-                    var nocon = img({ src: 'disconnected.svg', id: "noconn-" + user.id, className: "videonoconn", alt: 'not connected', title: "No Connection" });
-                    divid.appendChild(novid);
-                    divid.appendChild(noaud);
-                    divid.appendChild(nocon);
-
-                    divid.appendChild(video);
-                    videoOverlayDiv.appendChild(divid);
-                    if (user.livestate) {
-                        var livediv = div({ className: 'livediv' });
-                        if (amIWatching(user.id)) {
-                            var livevideo = document.createElement('video');
-                            livevideo.setAttribute('autoPlay', true);
-                            livevideo.setAttribute('playsInline', true);
-                            livevideo.setAttribute('id', 'live-' + user.id);
-                            if (user.id === iam) {
-                                if (localLiveStream !== null) {
-                                    livevideo.srcObject = localLiveStream;
-                                }
-                            } else {
-                                if (user.id in remoteLiveStream) {
-                                    livevideo.srcObject = remoteLiveStream[user.id];
-                                }
-                            }
-                            livediv.appendChild(livevideo);
-                        } else {
-                            var span1 = document.createElement('span');
-                            var span2 = document.createElement('span');
-                            var span3 = document.createElement('span');
-                            span1.innerText = user.name;
-                            span2.innerText = 'is streaming';
-                            span3.innerText = user.livelabel;
-                            livediv.appendChild(span1);
-                            livediv.appendChild(span2);
-                            livediv.appendChild(span3);
-
-                            livediv.onclick = () => {
-                                send({ type: 'letmesee', touserid: user.id, fromuserid: iam, message: true });
-                                amWatching[user.id] = true;
-                                populateRoom();
-                            }
-                        }
-                        liveDiv.appendChild(livediv);
-                        count++;
-                    }
-
-                    // If Me
-                    if (user.id === iam) {
-                        video.muted = true;
-                        nocon.style.display = 'none';
-                        if (localWebcamStream !== null) {
-                            video.srcObject = localWebcamStream;
-                            video.muted = true;
-                            video.volume = 0.0;
-                            video.classList.add('selfie');
-                            if (el.settingFlipWebcam.checked) {
-                                video.style.transform = 'rotateY(180deg)';
-                            }
-                        }
-                    } else {
-                        if (user.id in remoteWebcamStream) {
-                            video.srcObject = remoteWebcamStream[user.id];
-                        } else {
-                            startCall(user.id);
-                        }
-                    }
-
+                    populateRoomVideo(videoOverlayDiv, videoOverlayDiv, user);
                 });
                 contents.append(videoOverlayDiv);
             }
@@ -1404,6 +1249,88 @@ onstart.push(() => {
         updateDeviceState();
     }
 
+    const populateRoomVideo = (webcam_parent, live_parent, user) => {
+        var user = getUserByID(user.id);
+        // Create a Video element for voice chat
+        var divid = div({ className: 'videodiv', id: 'videodiv-' + user.id });
+        var video = document.createElement('video');
+        video.setAttribute('poster', user.avatar);
+        video.setAttribute('autoPlay', true);
+        video.setAttribute('playsInline', true);
+        video.setAttribute('id', 'video-' + user.id);
+        video.setAttribute('volume', getConfig('volume-' + user.id, 1.0));
+
+        var novid = img({ src: 'webcamoff.svg', id: "novideo-" + user.id, className: "videonovideo", alt: 'has no video stream', title: "No video" });
+        var noaud = img({ src: 'micoff.svg', id: "noaudio-" + user.id, className: "videonoaudio", alt: 'has no audio stream', title: "No Audio" });
+        var nocon = img({ src: 'noconnection.svg', id: "noconn-" + user.id, className: "videonoconn", alt: 'not connected', title: "No Connection" });
+        divid.appendChild(novid);
+        divid.appendChild(noaud);
+        divid.appendChild(nocon);
+
+        divid.appendChild(video);
+        webcam_parent.appendChild(divid);
+        if (user.livestate) {
+            var livediv = div({ className: 'livediv' });
+            if (amIWatching(user.id)) {
+                var livevideo = document.createElement('video');
+                livevideo.setAttribute('autoPlay', true);
+                livevideo.setAttribute('playsInline', true);
+                livevideo.setAttribute('id', 'live-' + user.id);
+                if (user.id === iam) {
+                    if (localLiveStream !== null) {
+                        livevideo.srcObject = localLiveStream;
+                    }
+                } else {
+                    if (user.id in remoteLiveStream) {
+                        livevideo.srcObject = remoteLiveStream[user.id];
+                    }
+                }
+                livediv.appendChild(livevideo);
+            } else {
+                var span1 = document.createElement('span');
+                var span2 = document.createElement('span');
+                var span3 = document.createElement('span');
+                span1.innerText = user.name;
+                span2.innerText = 'is streaming';
+                span3.innerText = user.livelabel;
+                livediv.appendChild(span1);
+                livediv.appendChild(span2);
+                livediv.appendChild(span3);
+
+                livediv.onclick = () => {
+                    console.log('Start watching ' + user.id);
+                    send({ type: 'letmesee', touserid: user.id, fromuserid: iam, message: true });
+                    amWatching[user.id] = true;
+                    populateRoom();
+                }
+            }
+            live_parent.appendChild(livediv);
+        }
+
+        // If Me
+        if (user.id === iam) {
+            video.muted = true;
+            nocon.style.display = 'none';
+            if (localWebcamStream !== null) {
+                video.srcObject = localWebcamStream;
+                video.muted = true;
+                video.volume = 0.0;
+                video.classList.add('selfie');
+                if (el.settingFlipWebcam.checked) {
+                    video.style.transform = 'rotateY(180deg)';
+                }
+            }
+        } else {
+            if (user.id in remoteWebcamStream) {
+                video.srcObject = remoteWebcamStream[user.id];
+            } else {
+                startCall(user.id);
+            }
+        }
+
+
+    }
+
     const autoComplete = () => {
         if (autocompleteing === currentView) {
             var inputtext = document.getElementById('inputtext');
@@ -1477,6 +1404,7 @@ onstart.push(() => {
         var room = getRoom(roomid);
         // Moving TO a voice room
         if (room && room.type === 'voice') {
+            stopStreaming();
             if (roomid !== currentVoiceRoom) {
                 // From a different room, close connections
                 Object.values(peerConnection).forEach((pc) => {
@@ -1489,6 +1417,7 @@ onstart.push(() => {
         // Leaving voice room
         if (!room) {
             // Close connections
+            stopStreaming();
             Object.values(peerConnection).forEach((pc) => {
                 pc.close();
             });
@@ -1750,6 +1679,9 @@ onstart.push(() => {
     }
 
     const replacePeerMedia = (pc) => {
+        if (!pc) {
+            return;
+        }
         var senders = pc.getSenders().length;
         var sources = []
         var tracks = [];
@@ -1799,13 +1731,17 @@ onstart.push(() => {
     }
     const toggleScreenShare = () => {
         if (isScreenShare) {
-            send({ type: 'golive', livestate: false, livelabel: '' });
-            isScreenShare = false;
-            replaceAllPeerMedia();
-            localLiveStream = null;
+            stopStreaming();
         } else {
             selectScreenShare();
         }
+    }
+
+    const stopStreaming = () => {
+        send({ type: 'golive', livestate: false, livelabel: '' });
+        isScreenShare = false;
+        replaceAllPeerMedia();
+        localLiveStream = null;
     }
 
     const isUserWatchingMe = (uuid) => {
