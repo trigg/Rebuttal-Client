@@ -17,7 +17,7 @@ onstart.push(() => {
         if (s) {
             console.log("Playing sound for '" + sound + "' at volume : " + sfxVolume);
             s.volume = sfxVolume;
-            s.play();
+            s.play().catch((err) => { });
 
         } else {
             console.log("No sound for '" + sound + "'");
