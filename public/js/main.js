@@ -963,7 +963,15 @@ onstart.push(() => {
                         }
                         livediv.appendChild(livevideo);
                     } else {
-                        livediv.innerHtml = user.name + "<br />is streaming<br />" + user.livelabel;
+                        var span1 = document.createElement('span');
+                        var span2 = document.createElement('span');
+                        var span3 = document.createElement('span');
+                        span1.innerText = user.name;
+                        span2.innerText = 'is streaming';
+                        span3.innerText = user.livelabel;
+                        livediv.appendChild(span1);
+                        livediv.appendChild(span2);
+                        livediv.appendChild(span3);
                     }
                     liveDiv.appendChild(livediv);
                     count++;
