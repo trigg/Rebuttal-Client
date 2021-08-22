@@ -45,6 +45,9 @@ var noWebcamFound = false;
 var sfxVolume = 0.5;
 var detectTalking = true;
 var detectTalkingLevel = 0.05;
+var fullscreenUserID = null;
+var fullscreenParent = null;
+var fullscreenElement = null;
 // Browser storage
 
 var theme = null;

@@ -551,8 +551,7 @@ onstart.push(() => {
         },
         "disconnect": (data) => {
             cleanupStream(data.userid);
-            amWatching[data.userid] = false;
-
+            setNotWatching(data.userid);
         },
         "login": (data) => {
             const { success, userid } = data;
@@ -625,6 +624,9 @@ onstart.push(() => {
                 Object.values(peerConnection).forEach((pc) => {
                     cleanupStream(pc.userid);
                 })
+                Object.keys(amWatching).forEach(uuid => {
+                    setNotWatching(uuid);
+                });
                 peerConnection = {};
                 remoteWebcamStream = {};
                 amWatching = {};
@@ -632,7 +634,7 @@ onstart.push(() => {
                 playSound('voiceleave');
             } else {
                 cleanupStream(userid);
-                amWatching[userid] = false;
+                setNotWatching(userid)
                 isWatching[userid] = false;
             }
         },
@@ -1295,9 +1297,7 @@ onstart.push(() => {
                             text: 'Stop watching',
                             callback: () => {
                                 console.log("Stop watching " + user.id);
-                                amWatching[user.id] = false;
-                                send({ type: 'letmesee', touserid: user.id, fromuserid: iam, message: false });
-                                populateRoom();
+                                setNotWatching(user.id);
                             },
                             class: 'contextstopstream'
                         });
@@ -1305,7 +1305,7 @@ onstart.push(() => {
                         {
                             text: 'Fullscreen',
                             callback: () => {
-                                goFullscreen(livevideo, livediv);
+                                goFullscreen(livevideo, livediv, user.id);
                             },
                             class: 'contextfullscreen'
                         }
@@ -1334,10 +1334,7 @@ onstart.push(() => {
                         {
                             text: 'Watch',
                             callback: () => {
-                                console.log('Start watching ' + user.id);
-                                send({ type: 'letmesee', touserid: user.id, fromuserid: iam, message: true });
-                                amWatching[user.id] = true;
-                                populateRoom();
+                                setWatching(user.id);
                             },
                             class: 'contextstartstream'
                         });
@@ -1345,10 +1342,7 @@ onstart.push(() => {
                 }
 
                 livediv.onclick = () => {
-                    console.log('Start watching ' + user.id);
-                    send({ type: 'letmesee', touserid: user.id, fromuserid: iam, message: true });
-                    amWatching[user.id] = true;
-                    populateRoom();
+                    setWatching(user.id);
                 }
             }
             live_parent.appendChild(livediv);
@@ -1376,13 +1370,23 @@ onstart.push(() => {
         }
     }
 
-    const goFullscreen = (element, parent) => {
+    const goFullscreen = (element, parent, userid) => {
         el.fullscreenpopup.style.display = 'flex';
         el.fullscreenpopup.appendChild(element);
+        fullscreenUserID = userid;
+        fullscreenParent = parent;
+        fullscreenElement = element;
         el.fullscreenpopup.onclick = () => {
-            parent.appendChild(element);
-            el.fullscreenpopup.style.display = 'none';
+            closeFullscreen();
         }
+    }
+
+    const closeFullscreen = () => {
+        fullscreenParent.appendChild(fullscreenElement);
+        el.fullscreenpopup.style.display = 'none';
+        fullscreenUserID = null;
+        fullscreenElement = null;
+        fullscreenParent = null;
     }
 
     const autoComplete = () => {
@@ -1540,10 +1544,14 @@ onstart.push(() => {
                 }
                 if (pc.connectionState === 'connected') {
                     var vc = document.getElementById("noconn-" + userid);
-                    vc.style.display = 'none';
+                    if (vc) {
+                        vc.style.display = 'none';
+                    }
                 } else {
                     var vc = document.getElementById("noconn-" + userid);
-                    vc.style.display = 'block';
+                    if (vc) {
+                        vc.style.display = 'block';
+                    }
                 }
 
             };
@@ -1794,8 +1802,8 @@ onstart.push(() => {
     const stopStreaming = () => {
         send({ type: 'golive', livestate: false, livelabel: '' });
         isScreenShare = false;
-        replaceAllPeerMedia();
         localLiveStream = null;
+        replaceAllPeerMedia();
     }
 
     const isUserWatchingMe = (uuid) => {
@@ -1804,6 +1812,22 @@ onstart.push(() => {
 
     const amIWatching = (uuid) => {
         return (uuid in amWatching && amWatching[uuid]);
+    }
+
+    const setNotWatching = (uuid) => {
+        if (uuid == fullscreenUserID) {
+            closeFullscreen();
+        }
+        amWatching[uuid] = false;
+        send({ type: 'letmesee', touserid: uuid, fromuserid: iam, message: false });
+        populateRoom();
+    }
+
+    const setWatching = (uuid) => {
+        console.log('Start watching ' + uuid);
+        send({ type: 'letmesee', touserid: uuid, fromuserid: iam, message: true });
+        amWatching[uuid] = true;
+        populateRoom();
     }
 
     showStreamingOptions = (sources) => {

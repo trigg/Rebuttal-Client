@@ -235,7 +235,6 @@ code {
   display: flex;
   overflow-y: hidden;
   overflow-x: auto;
-  height: 250px;
   flex-shrink: 0;
   justify-content: space-around;
   color: white;
