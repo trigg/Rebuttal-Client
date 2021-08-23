@@ -253,7 +253,7 @@ onstart.push(() => {
         }
     })
 
-
+    setupCheckbox('blurwebcam', el.settingBlurWebcam, () => { populateRoom(); replaceAllPeerMedia() });
     setupCheckbox('noisesupress', el.settingNoiseSupress, () => { startLocalDevices(); });
     setupCheckbox('echocancel', el.settingEchoCancellation, () => { startLocalDevices(); });
     setupCheckbox('hidedupename', el.settingsappearancehidedupename, () => { populateRoom(); });

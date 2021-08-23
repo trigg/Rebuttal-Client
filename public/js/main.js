@@ -1312,8 +1312,6 @@ onstart.push(() => {
                     )
                     showContextMenu(list, mouseX(e), mouseY(e));
                 }
-
-
                 livediv.appendChild(livevideo);
             } else {
                 var span1 = document.createElement('span');
@@ -1361,6 +1359,26 @@ onstart.push(() => {
                     video.style.transform = 'rotateY(180deg)';
                 }
             }
+            if (getConfig('blurwebcam', false)) {
+                var canvas = document.createElement('canvas');
+                video.hidden = true;
+                video.height = 250;
+                video.width = 444;
+                canvas.hidden = false;
+                canvas.id = 'blurcanvas';
+                divid.appendChild(canvas);
+                video.onloadeddata = () => {
+                    var options = {
+                        multiplier: 0.75,
+                        stride: 32,
+                        quantBytes: 4
+                    }
+                    bodyPix.load(options)
+                        .then(net => performBodyPix(net, canvas, video))
+                        .catch(err => console.log(err));
+
+                }
+            }
         } else {
             if (user.id in remoteWebcamStream) {
                 video.srcObject = remoteWebcamStream[user.id];
@@ -1368,6 +1386,22 @@ onstart.push(() => {
                 startCall(user.id);
             }
         }
+    }
+
+    const performBodyPix = async (net, canvas, video) => {
+        console.log("Started blur thread");
+        while (canvas && video && document.body.contains(canvas) && document.contains(video)) {
+            const segm = await net.segmentPerson(video);
+            bodyPix.drawBokehEffect(
+                canvas,
+                video,
+                segm,
+                blurValue,
+                blurEdgeValue,
+                false
+            );
+        }
+        console.log("Stopped blur thread");
     }
 
     const goFullscreen = (element, parent, userid) => {
@@ -1734,7 +1768,7 @@ onstart.push(() => {
             });
     }
 
-    const replaceAllPeerMedia = () => {
+    replaceAllPeerMedia = () => {
         Object.values(peerConnection).forEach((pc) => {
             replacePeerMedia(pc);
         });
@@ -1747,12 +1781,18 @@ onstart.push(() => {
         var senders = pc.getSenders().length;
         var sources = []
         var tracks = [];
+
+        var blurCanvas = document.getElementById('blurcanvas');
         if (!localWebcamStream) {
             console.log('Local Webcam Stream null : cannot replace peer media');
             return;
         }
 
         sources.push(localWebcamStream);
+
+        if (getConfig('blurwebcam', false) && blurCanvas) {
+            tracks.push(blurCanvas.captureStream().getVideoTracks()[0]);
+        }
         if (localWebcamStream.getVideoTracks().length == 1) {
             tracks.push(localWebcamStream.getVideoTracks()[0]);
         } else {

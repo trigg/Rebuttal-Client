@@ -20,3 +20,4 @@ theme = getConfig('theme', 'bubblegum');
 sfxVolume = getConfig('sfxvolume', 0.5);
 font = getConfig('font', null);
 detectTalkingLevel = getConfig('voicetriggerlevel', 0.05);
+blurUser = getConfig('blurwebcam', false);

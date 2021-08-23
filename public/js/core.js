@@ -48,6 +48,8 @@ var detectTalkingLevel = 0.05;
 var fullscreenUserID = null;
 var fullscreenParent = null;
 var fullscreenElement = null;
+var blurValue = 5;
+var blurEdgeValue = 2;
 // Browser storage
 
 var theme = null;
@@ -92,6 +94,7 @@ var connect;
 var populateRoom;
 var playSound;
 var showStreamingOptions;
+var replaceAllPeerMedia;
 
 
 getUserByID = (id) => {

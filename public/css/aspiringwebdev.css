@@ -357,6 +357,11 @@ video {
   background: #000c;
 }
 
+canvas.blurcanvas {
+  width: 444px;
+  height: 250px;
+}
+
 .custom-select-wrapper {
   position: relative;
   user-select: none;
