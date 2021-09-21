@@ -105,6 +105,7 @@ onstart.push(() => {
     setCustomSelect(el.settingsfont, font);
 
     updateThemesInSettings = function () {
+        if (!themelist) { return; }
         el.settingsthemelist.innerText = '';
         themelist.forEach(theme => {
             var span = document.createElement('span');

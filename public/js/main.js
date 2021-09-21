@@ -234,7 +234,9 @@ onstart.push(() => {
 
             elementUser.oncontextmenu = (e) => {
                 e.preventDefault();
-                var list = [];
+                var list = populateContextMenu('user', user.id);
+
+                // Add client-only options
                 list.push({
                     text: 'volume', slider: getConfig('volume-' + user.id, 1.0), callback: (e) => {
                         setConfig('volume-' + user.id, e.target.value);
@@ -310,6 +312,36 @@ onstart.push(() => {
         }
     }
 
+    const populateContextMenu = (type, id) => {
+        var list = [];
+        if (type in contextmenus) {
+            contextmenus[type].forEach(option => {
+                if ('permissionRequired' in option) {
+                    if (!hasPerm(option.permissionRequired)) {
+                        return;
+                    }
+                }
+
+                list.push(
+                    {
+                        text: option.label,
+                        class: option.class,
+                        callback: function () {
+                            send({
+                                type: 'contextoption',
+                                context: type,
+                                option: option.option,
+                                value: id
+                            })
+                        }
+                    }
+                );
+            });
+        }
+
+        return list;
+    }
+
     const showContextMenu = (list, x, y) => {
         el.contextmenu.style.display = 'none';
         if (x < (window.innerWidth / 2)) {
@@ -382,12 +414,15 @@ onstart.push(() => {
                 e.preventDefault();
                 var list = [];
                 if (room.type == 'voice') {
+                    list = populateContextMenu('voiceroom', room.id);
                     if (currentVoiceRoom == room.id) {
                         // User is in this room
                         list.push({ text: "Leave chat", callback: () => { switchRoom(null) } });
                     } else {
                         list.push({ text: "Join chat", callback: () => { switchRoom(room.id) } });
                     }
+                } else {
+                    list = populateContextMenu('textroom', room.id);
                 }
                 if (hasPerm('renameRoom')) {
                     list.push({
@@ -437,7 +472,7 @@ onstart.push(() => {
 
                 elementUser.oncontextmenu = (e) => {
                     e.preventDefault();
-                    var list = [];
+                    var list = populateContextMenu('user', user.id);
                     list.push({
                         text: 'Volume', slider: getConfig('volume-' + user.id, 1.0), callback: (e) => {
                             setConfig('volume-' + user.id, e.target.value);
@@ -537,6 +572,7 @@ onstart.push(() => {
                 themelist = data.themelist;
             }
             updateThemesInSettings();
+            contextmenus = data.contextmenus;
 
             if (customUsername && customPassword) {
                 send({ type: 'login', email: customUsername, password: customPassword });
@@ -781,7 +817,92 @@ onstart.push(() => {
             }
             replacePeerMedia(peerConnection[fromuserid]);
             populateRoom();
+        },
+        'presentcustomwindow': (data) => {
+            var window = createWindow(data.window);
+            showCustom(window);
         }
+    }
+
+    const createWindow = (data) => {
+        var [element, inputlist] = createWindowElement(data);
+        var allinput = {};
+        inputlist.forEach(input2 => {
+            allinput[input2.id] = input2.value;
+        });
+
+        inputlist.forEach(input => {
+
+            input.onchange = (_changeevent) => {
+                send({
+                    userid: iam,
+                    inputid: input.id,
+                    value: input.value,
+                    allinputs: allinput
+                });
+            }
+            if (input.type == 'button') {
+                input.onclick = (_changeevent) => {
+                    send({
+                        userid: iam,
+                        inputid: input.id,
+                        value: input.value,
+                        allinputs: allinput
+                    });
+                }
+            }
+        });
+        return element;
+    }
+
+    const createWindowElement = (data) => {
+        // Things we are not doing :
+        // - script elements
+        // - innerHtml
+        // - video elements?
+
+        // Since we can't be sure what people might try
+        // Let's leave this open to feature requests
+        // Tell us what you need!
+        switch (data.type) {
+            case 'div':
+            case 'span':
+            case 'textarea':
+            case 'img':
+            case 'input':
+                var el = document.createElement(data.type);
+                if ('id' in data) {
+                    el.id = data.id;
+                }
+                if ('classList' in data) {
+                    el.classList = data.classList;
+                }
+                if ('text' in data) {
+                    el.innerText = data.text;
+                }
+                if ('inputtype' in data) {
+                    el.type = data.inputtype;
+                }
+                if ('value' in data) {
+                    el.value = data.value;
+                }
+                var inputlist = []
+                if ('children' in data) {
+                    data.children.forEach(child => {
+                        var [childElement, inputlist2] = createWindowElement(child);
+                        if (childElement) {
+                            el.appendChild(childElement);
+                            inputlist = inputlist.concat(inputlist2)
+                        }
+                    });
+                }
+                inputlist.push(el)
+
+                return [el, inputlist];
+            default:
+                return [null, []];
+        }
+
     }
 
     const hasPerm = (perm) => {
@@ -1028,7 +1149,7 @@ onstart.push(() => {
                                 messageMessageDiv.innerHTML = markupParser.makeHtml(message.text);
                                 messageMessageDiv.oncontextmenu = (e) => {
                                     e.preventDefault();
-                                    var list = [];
+                                    var list = populateContextMenu('message', nessage.id);
                                     if (message.userid === iam || hasPerm('changeMessage')) {
                                         list.push(
                                             {
@@ -1290,7 +1411,7 @@ onstart.push(() => {
 
                 livediv.oncontextmenu = (e) => {
                     e.preventDefault();
-                    var list = [];
+                    var list = populateContextMenu('livestream', user.id);
 
                     list.push(
                         {
@@ -1326,7 +1447,7 @@ onstart.push(() => {
 
                 livediv.oncontextmenu = (e) => {
                     e.preventDefault();
-                    var list = [];
+                    var list = populateContextMenu('livestream', user.id);
 
                     list.push(
                         {

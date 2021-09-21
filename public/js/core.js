@@ -9,6 +9,7 @@ var ws = null;
 var roomlist = [];
 var userlist = [];
 var messagelist = [];
+var contextmenus = [];
 var currentView = '';
 var currentVoiceRoom = '';
 var iam = null;
@@ -48,6 +49,7 @@ var detectTalkingLevel = 0.05;
 var fullscreenUserID = null;
 var fullscreenParent = null;
 var fullscreenElement = null;
+var blurUser = true;
 var blurValue = 5;
 var blurEdgeValue = 2;
 // Browser storage
@@ -122,6 +124,6 @@ electronMode = /electron/i.test(navigator.userAgent)
 console.log("Electron: " + electronMode);
 
 
-//if (electronMode) {
-window.ipc.recv('screenshare', (a, e) => { console.log("RECV RECVD"); showStreamingOptions(a) });
-//}
+if (electronMode) {
+    window.ipc.recv('screenshare', (a, e) => { console.log("RECV RECVD"); showStreamingOptions(a) });
+}
