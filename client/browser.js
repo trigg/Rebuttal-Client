@@ -132,12 +132,12 @@ window.onload = () => {
 
     el.serverform.onsubmit = (e) => {
         e.preventDefault();
-        el.serverformmsg.innerText='';
+        el.serverformmsg.innerText = '';
         var ip = el.serverip.value;
         // Strip wrong prefix
         ip.replace(/^https?:\/\//, '');
         // Fix prefix
-        if (ip.indexOf('wss://') !== 0 && ip.indexOf('ws://')) {
+        if (ip.indexOf('wss://') !== 0 && ip.indexOf('ws://') !== 0) {
             ip = 'wss://' + ip;
         }
         // Remove trailing slash
@@ -171,7 +171,7 @@ window.onload = () => {
             clearTimeout(timeout);
         };
         ws.onclose = (e) => {
-            el.serverformmsg.innerText='Connection failed: Check address';
+            el.serverformmsg.innerText = 'Connection failed: Check address<br />' + e.reason;
             ws.close();
             clearTimeout(timeout);
         }
