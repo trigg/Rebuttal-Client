@@ -11,7 +11,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v1
         with:
-          node-version: 18
+          node-version: 22
       - name: Prepare OS
         run: sudo apt install libarchive-tools rpm
       - name: Prepare Yarn
@@ -38,7 +38,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v1
         with:
-          node-version: 18
+          node-version: 22
       - run: yarn
       - run: yarn dist-win
       - name: Archive Windows Binaries
