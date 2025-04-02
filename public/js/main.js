@@ -574,8 +574,11 @@ onstart.push(() => {
             updateThemesInSettings();
             contextmenus = data.contextmenus;
 
+            if (! "v1" in data.protocols) {
+                el.loginReply.innerHTML = el.signupReply.innerHTML = "Unable to connect : No protocol v1";
+            }
             if (customUsername && customPassword) {
-                send({ type: 'login', email: customUsername, password: customPassword });
+                send({ type: 'login', email: customUsername, password: customPassword, protocol: "v1" });
                 // If the details are no longer correct, don't go into an infinite login loop
                 customUsername = null;
                 customPassword = null;
