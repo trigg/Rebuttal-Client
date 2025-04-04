@@ -999,7 +999,7 @@ onstart.push(() => {
         if (email) {
             if (password) {
                 if (electronMode) { window.ipc.send('savepassword', { server: customUrl, email, password }); }
-                send({ type: 'login', email, password });
+                send({ type: 'login', email, password, protocol:"v1" });
                 startLocalDevices();
                 Notification.requestPermission();
             } else {
