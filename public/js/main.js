@@ -783,7 +783,7 @@ onstart.push(() => {
             }
         },
         'talking': (data) => {
-            var { userid, message } = data;
+            var { userid, talking } = data;
             var sideuser = document.getElementById('user-' + userid)
             var videouser = document.getElementById('videodiv-' + userid);
             if (message) {
@@ -999,7 +999,7 @@ onstart.push(() => {
         if (email) {
             if (password) {
                 if (electronMode) { window.ipc.send('savepassword', { server: customUrl, email, password }); }
-                send({ type: 'login', email, password, protocol:"v1" });
+                send({ type: 'login', email, password, protocol: "v1" });
                 startLocalDevices();
                 Notification.requestPermission();
             } else {
@@ -1797,12 +1797,12 @@ onstart.push(() => {
                     sideuser.classList.add('usertalking');
                     if (videouser) { videouser.classList.add('videodivtalking'); }
                     if (electronMode) { window.ipc.send('talkstart', uuid); }
-                    send({ type: 'talking', userid: uuid, message: 'talking' });
+                    send({ type: 'talking', userid: uuid, talking: true });
                 } else {
                     sideuser.classList.remove('usertalking');
                     if (videouser) { videouser.classList.remove('videodivtalking'); }
                     if (electronMode) { window.ipc.send('talkstop', uuid); }
-                    send({ type: 'talking', userid: uuid, message: null });
+                    send({ type: 'talking', userid: uuid, talking: false });
                 }
             }, 200);
         });
