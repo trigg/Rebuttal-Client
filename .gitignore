@@ -1,7 +1,6 @@
-node_modules
-
-package-lock.json
-yarn-error.log
-
-dist
-*.tgz
+.DS_Store
+dist/
+node_modules/
+thumbs.db
+.idea/
+.gitignore
