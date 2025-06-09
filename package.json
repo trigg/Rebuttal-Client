@@ -1,67 +1,36 @@
 {
   "name": "rebuttal-client",
-  "version": "1.0.0",
-  "description": "",
-  "main": "app.js",
-  "scripts": {
-    "run": "electron .",
-    "run-overlay": "electron  --ignore-certificate-errors --enable-transparent-visuals --disable-gpu .",
-    "run-unsafe": "electron  --ignore-certificate-errors .",
-    "test": "node test/index.js",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder -mwl",
-    "dist-win": "electron-builder -w --x64",
-    "dist-linux": "electron-builder -l --x64",
-    "dist-mac": "electron-builder -m --x64",
-    "postinstall": "electron-builder install-app-deps",
-    "sass": "cd public/css && sass accounting.scss:accounting.css aspiringwebdev.scss:aspiringwebdev.css bubblegum.scss:bubblegum.css"
-  },
-  "author": {
-    "name": "trigg",
-    "email": "triggerhapp@gmail.com"
-  },
-  "license": "GPL-3.0-or-later",
-  "dependencies": {
-    "keytar": "^7.7.0"
-  },
+  "type": "module",
+  "main": "./dist/main.js",
   "devDependencies": {
-    "electron": "^22.0.0",
-    "electron-builder": "^26.0.12",
-    "node-gyp": "^8.0.0"
+    "@babel/core": "^7.27.4",
+    "@babel/preset-env": "^7.27.2",
+    "@types/cacheable-request": "^8.3.6",
+    "@types/electron": "^1.6.12",
+    "@types/http-cache-semantics": "^4.0.4",
+    "@types/ms": "^2.1.0",
+    "@types/responselike": "^1.0.3",
+    "@types/showdown": "^2.0.6",
+    "autoprefixer": "^10.4.21",
+    "babel-loader": "^10.0.0",
+    "css-loader": "^7.1.2",
+    "electron": "^36.3.2",
+    "node-sass": "^9.0.0",
+    "postcss-loader": "^8.1.1",
+    "sass-loader": "^16.0.5",
+    "style-loader": "^4.0.0",
+    "typescript": "^5.8.3",
+    "webpack": "^5.99.9"
   },
-  "build": {
-    "appId": "com.electron.rebuttal.app",
-    "productName": "Rebuttal Client",
-    "copyright": "Copyright ©2021 Nathan Howard",
-    "publish": null,
-    "dmg": {
-      "contents": [
-        {
-          "x": 110,
-          "y": 150
-        },
-        {
-          "x": 240,
-          "y": 150,
-          "type": "link",
-          "path": "/Applications"
-        }
-      ]
-    },
-    "win": {
-      "target": [
-        "msi"
-      ]
-    },
-    "linux": {
-      "category": "Chat",
-      "target": [
-        "AppImage",
-        "snap",
-        "deb",
-        "pacman",
-        "tar.gz"
-      ]
-    }
+  "dependencies": {
+    "keytar": "^7.9.0",
+    "showdown": "^2.1.0"
+  },
+  "scripts": {
+    "start": "electron ./dist/main.js --enable-features=UseOzonePlatform,WaylandWindowDecor --ozone-platform=wayland",
+    "start-insecure": "electron ./dist/main.js --enable-features=UseOzonePlatform,WaylandWindowDecor --ozone-platform=wayland --ignore-certificate-errors",
+    "build": "./node_modules/.bin/tsc",
+    "build-webapp": "cd webapp && yarn run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
   }
 }

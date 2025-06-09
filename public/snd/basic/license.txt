@@ -1,3 +1,0 @@
-Default Library taken from https://mixkit.co/
-
-https://mixkit.co/license/
